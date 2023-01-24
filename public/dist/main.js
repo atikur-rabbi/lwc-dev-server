@@ -5038,6 +5038,69 @@ function validateLightDomTemplate(template, vm) {
     assert.isTrue(isUndefined$1(template.renderMode), `Shadow DOM components template can't render light DOM templates. Either remove the 'lwc:render-mode' directive from ${getComponentTag(vm)} or set it to 'lwc:render-mode="shadow"`);
   }
 }
+function buildParseFragmentFn(createFragmentFn) {
+  return (strings, ...keys) => {
+    const cache = create(null);
+    return function () {
+      const {
+        context: {
+          hasScopedStyles,
+          stylesheetToken
+        },
+        shadowMode,
+        renderer
+      } = getVMBeingRendered();
+      const hasStyleToken = !isUndefined$1(stylesheetToken);
+      const isSyntheticShadow = shadowMode === 1 /* ShadowMode.Synthetic */;
+      let cacheKey = 0;
+      if (hasStyleToken && hasScopedStyles) {
+        cacheKey |= 1 /* FragmentCache.HAS_SCOPED_STYLE */;
+      }
+
+      if (hasStyleToken && isSyntheticShadow) {
+        cacheKey |= 2 /* FragmentCache.SHADOW_MODE_SYNTHETIC */;
+      }
+
+      if (!isUndefined$1(cache[cacheKey])) {
+        return cache[cacheKey];
+      }
+      const classToken = hasScopedStyles && hasStyleToken ? ' ' + stylesheetToken : '';
+      const classAttrToken = hasScopedStyles && hasStyleToken ? ` class="${stylesheetToken}"` : '';
+      const attrToken = hasStyleToken && isSyntheticShadow ? ' ' + stylesheetToken : '';
+      let htmlFragment = '';
+      for (let i = 0, n = keys.length; i < n; i++) {
+        switch (keys[i]) {
+          case 0:
+            // styleToken in existing class attr
+            htmlFragment += strings[i] + classToken;
+            break;
+          case 1:
+            // styleToken for added class attr
+            htmlFragment += strings[i] + classAttrToken;
+            break;
+          case 2:
+            // styleToken as attr
+            htmlFragment += strings[i] + attrToken;
+            break;
+          case 3:
+            // ${1}${2}
+            htmlFragment += strings[i] + classAttrToken + attrToken;
+            break;
+        }
+      }
+      htmlFragment += strings[strings.length - 1];
+      cache[cacheKey] = createFragmentFn(htmlFragment, renderer);
+      return cache[cacheKey];
+    };
+  };
+}
+// Note: at the moment this code executes, we don't have a renderer yet.
+const parseFragment = buildParseFragmentFn((html, renderer) => {
+  const {
+    createFragment
+  } = renderer;
+  return createFragment(html);
+});
 function evaluateTemplate(vm, html) {
   {
     assert.isTrue(isFunction$1(html), `evaluateTemplate() second argument must be an imported template instead of ${toString$1(html)}`);
@@ -8245,99 +8308,255 @@ var _cHeader = registerComponent(Header, {
   tmpl: _tmpl
 });
 
+function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
+  var shadowSelector = token ? ("[" + token + "]") : "";
+  var hostSelector = token ? ("[" + token + "-host]") : "";
+  return ((useActualHostSelector ? ":host {--background-color: #fff;}" : hostSelector + " {--background-color: #fff;}")) + "table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}";
+  /*LWC compiler v2.32.1*/
+}
+var _implicitStylesheets$2 = [stylesheet$2];
+
+const $fragment1 = parseFragment`<h1${3}>Table Demo</h1>`;
+const $fragment2 = parseFragment`<thead${3}><tr${3}><th${3}>Month</th><th${3}>Savings</th></tr></thead>`;
 const stc0$1 = {
   key: 0
 };
 const stc1 = {
-  props: {
-    "label": "Demo LWC Components"
+  classMap: {
+    "datatable": true
   },
-  key: 1
+  key: 3
+};
+const stc2 = {
+  key: 6
+};
+const stc3 = {
+  key: 8
+};
+const stc4 = {
+  key: 9
 };
 function tmpl$1($api, $cmp, $slotset, $ctx) {
-  const {c: api_custom_element, h: api_element} = $api;
-  return [api_element("div", stc0$1, [api_custom_element("c-header", _cHeader, stc1)])];
+  const {st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator} = $api;
+  return [api_element("div", stc0$1, [api_static_fragment($fragment1(), 2), api_element("table", stc1, [api_static_fragment($fragment2(), 5), api_element("tbody", stc2, api_iterator($cmp.data, function (row) {
+    return api_element("tr", {
+      key: api_key(7, row.id)
+    }, [api_element("td", stc3, [api_text(api_dynamic_text(row.month))]), api_element("td", stc4, [api_text(api_dynamic_text(row.savings))])]);
+  }))])])];
   /*LWC compiler v2.32.1*/
 }
 var _tmpl$1 = registerTemplate(tmpl$1);
 tmpl$1.stylesheets = [];
 
 
-if (_implicitStylesheets) {
-  tmpl$1.stylesheets.push.apply(tmpl$1.stylesheets, _implicitStylesheets);
+if (_implicitStylesheets$2) {
+  tmpl$1.stylesheets.push.apply(tmpl$1.stylesheets, _implicitStylesheets$2);
 }
-if (_implicitStylesheets || undefined) {
-  tmpl$1.stylesheetToken = "c-app_app";
+if (_implicitStylesheets$2 || undefined) {
+  tmpl$1.stylesheetToken = "c-table_table";
 }
 freezeTemplate(tmpl$1);
+
+// data array with 1000 records for month and savings 
+const data = [{
+  month: 'Jan',
+  savings: 100
+}, {
+  month: 'Feb',
+  savings: 200
+}, {
+  month: 'Mar',
+  savings: 300
+}, {
+  month: 'Apr',
+  savings: 400
+}, {
+  month: 'May',
+  savings: 500
+}, {
+  month: 'Jun',
+  savings: 600
+}, {
+  month: 'Jul',
+  savings: 700
+}, {
+  month: 'Aug',
+  savings: 800
+}, {
+  month: 'Sep',
+  savings: 900
+}, {
+  month: 'Oct',
+  savings: 1000
+}, {
+  month: 'Nov',
+  savings: 1100
+}, {
+  month: 'Dec',
+  savings: 1200
+}, {
+  month: 'Jan',
+  savings: 1300
+}, {
+  month: 'Feb',
+  savings: 1400
+}, {
+  month: 'Mar',
+  savings: 1500
+}, {
+  month: 'Apr',
+  savings: 1600
+}, {
+  month: 'May',
+  savings: 1700
+}, {
+  month: 'Jun',
+  savings: 1800
+}, {
+  month: 'Jul',
+  savings: 1900
+}, {
+  month: 'Aug',
+  savings: 2000
+}];
+class Table extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.data = data;
+  }
+  renderedCallback() {
+    const table = this.template.querySelector(".datatable");
+    const trElements = table.querySelectorAll("tr");
+
+    // console.log("table");
+    // console.log(table);
+    // console.log("trElements");
+    // console.log(trElements);
+    // console.log(trElements.length);
+    this.showTable(1);
+  }
+  showTable(pageNo) {
+    const table = this.template.querySelector(".datatable");
+    const trElements = table.querySelectorAll("tr");
+    const perpage = 12;
+    for (let i = 0; i < trElements.length; i++) {
+      console.log(trElements[i]);
+      if (i < pageNo * perpage && i >= (pageNo - 1) * perpage) {
+        console.log("show");
+        trElements[i].style.display = "table-row";
+      } else {
+        console.log("hide");
+        trElements[i].style.display = "none";
+      }
+    }
+  }
+  /*LWC compiler v2.32.1*/
+}
+registerDecorators(Table, {
+  track: {
+    data: 1
+  }
+});
+var _cTable = registerComponent(Table, {
+  tmpl: _tmpl$1
+});
+
+const stc0$2 = {
+  key: 0
+};
+const stc1$1 = {
+  props: {
+    "label": "Demo LWC Components"
+  },
+  key: 1
+};
+const stc2$1 = {
+  key: 2
+};
+function tmpl$2($api, $cmp, $slotset, $ctx) {
+  const {c: api_custom_element, h: api_element} = $api;
+  return [api_element("div", stc0$2, [api_custom_element("c-header", _cHeader, stc1$1), api_custom_element("c-table", _cTable, stc2$1)])];
+  /*LWC compiler v2.32.1*/
+}
+var _tmpl$2 = registerTemplate(tmpl$2);
+tmpl$2.stylesheets = [];
+
+
+if (_implicitStylesheets) {
+  tmpl$2.stylesheets.push.apply(tmpl$2.stylesheets, _implicitStylesheets);
+}
+if (_implicitStylesheets || undefined) {
+  tmpl$2.stylesheetToken = "c-app_app";
+}
+freezeTemplate(tmpl$2);
 
 class App extends LightningElement {
   /*LWC compiler v2.32.1*/
 }
 var App$1 = registerComponent(App, {
-  tmpl: _tmpl$1
+  tmpl: _tmpl$2
 });
 
-function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
+function stylesheet$3(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
   return ((useActualHostSelector ? ":host {--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}" : hostSelector + " {--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}")) + "h1" + shadowSelector + ", h2" + shadowSelector + " {margin: 0;padding: 4px 10px;}";
   /*LWC compiler v2.32.1*/
 }
-var _implicitStylesheets$2 = [stylesheet$2];
+var _implicitStylesheets$3 = [stylesheet$3];
 
-const stc0$2 = {
+const stc0$3 = {
   classMap: {
     "theme": true
   },
   key: 0
 };
-const stc1$1 = {
+const stc1$2 = {
   classMap: {
     "layout-body": true
   },
   key: 1
 };
-const stc2 = {
+const stc2$2 = {
   classMap: {
     "col-12": true,
     "slot-container": true
   },
   key: 2
 };
-const stc3 = {
+const stc3$1 = {
   classMap: {
     "home-container": true
   },
   key: 3
 };
-const stc4 = {
+const stc4$1 = {
   key: 4
 };
 const stc5 = [];
-function tmpl$2($api, $cmp, $slotset, $ctx) {
+function tmpl$3($api, $cmp, $slotset, $ctx) {
   const {s: api_slot, h: api_element} = $api;
-  return [api_element("div", stc0$2, [api_element("div", stc1$1, [api_element("div", stc2, [api_element("div", stc3, [api_slot("", stc4, stc5, $slotset)])])])])];
+  return [api_element("div", stc0$3, [api_element("div", stc1$2, [api_element("div", stc2$2, [api_element("div", stc3$1, [api_slot("", stc4$1, stc5, $slotset)])])])])];
   /*LWC compiler v2.32.1*/
 }
-var _tmpl$2 = registerTemplate(tmpl$2);
-tmpl$2.slots = [""];
-tmpl$2.stylesheets = [];
+var _tmpl$3 = registerTemplate(tmpl$3);
+tmpl$3.slots = [""];
+tmpl$3.stylesheets = [];
 
 
-if (_implicitStylesheets$2) {
-  tmpl$2.stylesheets.push.apply(tmpl$2.stylesheets, _implicitStylesheets$2);
+if (_implicitStylesheets$3) {
+  tmpl$3.stylesheets.push.apply(tmpl$3.stylesheets, _implicitStylesheets$3);
 }
-if (_implicitStylesheets$2 || undefined) {
-  tmpl$2.stylesheetToken = "c-theme_theme";
+if (_implicitStylesheets$3 || undefined) {
+  tmpl$3.stylesheetToken = "c-theme_theme";
 }
-freezeTemplate(tmpl$2);
+freezeTemplate(tmpl$3);
 
 class Theme extends LightningElement {
   /*LWC compiler v2.32.1*/
 }
 var Theme$1 = registerComponent(Theme, {
-  tmpl: _tmpl$2
+  tmpl: _tmpl$3
 });
 
 customElements.define('c-app', App$1.CustomElementConstructor);

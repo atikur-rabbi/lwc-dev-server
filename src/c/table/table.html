@@ -1,0 +1,22 @@
+<template>
+    <div>
+        <h1>Table Demo</h1>
+
+        <table class="datatable">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Savings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={data} for:item="row">
+                    <tr key={row.id}>
+                        <td>{row.month}</td>
+                        <td>{row.savings}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+</template>
