@@ -8311,38 +8311,24 @@ var _cHeader = registerComponent(Header, {
 function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {--background-color: #fff;}" : hostSelector + " {--background-color: #fff;}")) + "table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}";
+  return ((useActualHostSelector ? ":host {--background-color: #fff;}" : hostSelector + " {--background-color: #fff;}")) + "table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}";
   /*LWC compiler v2.32.1*/
 }
 var _implicitStylesheets$2 = [stylesheet$2];
 
 const $fragment1 = parseFragment`<h1${3}>Table Demo</h1>`;
-const $fragment2 = parseFragment`<thead${3}><tr${3}><th${3}>Month</th><th${3}>Savings</th></tr></thead>`;
 const stc0$1 = {
   key: 0
 };
 const stc1 = {
   classMap: {
-    "datatable": true
+    "pagination-container": true
   },
   key: 3
 };
-const stc2 = {
-  key: 6
-};
-const stc3 = {
-  key: 8
-};
-const stc4 = {
-  key: 9
-};
 function tmpl$1($api, $cmp, $slotset, $ctx) {
-  const {st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator} = $api;
-  return [api_element("div", stc0$1, [api_static_fragment($fragment1(), 2), api_element("table", stc1, [api_static_fragment($fragment2(), 5), api_element("tbody", stc2, api_iterator($cmp.data, function (row) {
-    return api_element("tr", {
-      key: api_key(7, row.id)
-    }, [api_element("td", stc3, [api_text(api_dynamic_text(row.month))]), api_element("td", stc4, [api_text(api_dynamic_text(row.savings))])]);
-  }))])])];
+  const {st: api_static_fragment, d: api_dynamic_text, t: api_text, h: api_element} = $api;
+  return [api_element("div", stc0$1, [api_static_fragment($fragment1(), 2), api_element("div", stc1, [api_text(api_dynamic_text($cmp.allpages))])])];
   /*LWC compiler v2.32.1*/
 }
 var _tmpl$1 = registerTemplate(tmpl$1);
@@ -8359,75 +8345,109 @@ freezeTemplate(tmpl$1);
 
 // data array with 1000 records for month and savings 
 const data = [{
+  id: 1,
   month: 'Jan',
   savings: 100
 }, {
+  id: 2,
   month: 'Feb',
   savings: 200
 }, {
+  id: 3,
   month: 'Mar',
   savings: 300
 }, {
+  id: 4,
   month: 'Apr',
   savings: 400
 }, {
+  id: 5,
   month: 'May',
   savings: 500
 }, {
+  id: 6,
   month: 'Jun',
   savings: 600
 }, {
+  id: 7,
   month: 'Jul',
   savings: 700
 }, {
+  id: 8,
   month: 'Aug',
   savings: 800
 }, {
+  id: 9,
   month: 'Sep',
   savings: 900
 }, {
+  id: 10,
   month: 'Oct',
   savings: 1000
 }, {
+  id: 11,
   month: 'Nov',
   savings: 1100
 }, {
+  id: 12,
   month: 'Dec',
   savings: 1200
 }, {
+  id: 13,
   month: 'Jan',
   savings: 1300
 }, {
+  id: 14,
   month: 'Feb',
   savings: 1400
 }, {
+  id: 15,
   month: 'Mar',
   savings: 1500
 }, {
+  id: 16,
   month: 'Apr',
   savings: 1600
 }, {
+  id: 17,
   month: 'May',
   savings: 1700
 }, {
+  id: 18,
   month: 'Jun',
   savings: 1800
 }, {
+  id: 19,
   month: 'Jul',
   savings: 1900
 }, {
+  id: 20,
   month: 'Aug',
   savings: 2000
+}, {
+  id: 21,
+  month: 'Sep',
+  savings: 2100
 }];
 class Table extends LightningElement {
   constructor(...args) {
     super(...args);
     this.data = data;
+    this.pagecount = [];
+    this.allpages = void 0;
+    this.perpage = 8;
   }
   renderedCallback() {
     const table = this.template.querySelector(".datatable");
     const trElements = table.querySelectorAll("tr");
+    this.pagecount = Math.ceil(trElements.length / this.perpage);
 
+    // for(let i = 0; i < this.pagecount; i++){
+    //     this.allpages.push({page: i});
+    // }
+    this.allpages = Array.from(Array(this.pagecount).keys());
+    console.log("pagecount", this.allpages);
+    console.log("pagecount", this.pagecount);
     // console.log("table");
     // console.log(table);
     // console.log("trElements");
@@ -8438,24 +8458,25 @@ class Table extends LightningElement {
   showTable(pageNo) {
     const table = this.template.querySelector(".datatable");
     const trElements = table.querySelectorAll("tr");
-    const perpage = 12;
+    const perpage = this.perpage;
     for (let i = 0; i < trElements.length; i++) {
-      console.log(trElements[i]);
       if (i < pageNo * perpage && i >= (pageNo - 1) * perpage) {
-        console.log("show");
         trElements[i].style.display = "table-row";
       } else {
-        console.log("hide");
         trElements[i].style.display = "none";
       }
     }
   }
+  handlePageChange(event) {
+    // this.showTable(event.detail);
+    // console.log(event.target.innerText);
+    // console.log(event.target.getAttribute('data-value'));
+    this.showTable(event.target.getAttribute('data-value'));
+  }
   /*LWC compiler v2.32.1*/
 }
 registerDecorators(Table, {
-  track: {
-    data: 1
-  }
+  fields: ["data", "pagecount", "allpages", "perpage"]
 });
 var _cTable = registerComponent(Table, {
   tmpl: _tmpl$1
@@ -8470,12 +8491,12 @@ const stc1$1 = {
   },
   key: 1
 };
-const stc2$1 = {
+const stc2 = {
   key: 2
 };
 function tmpl$2($api, $cmp, $slotset, $ctx) {
   const {c: api_custom_element, h: api_element} = $api;
-  return [api_element("div", stc0$2, [api_custom_element("c-header", _cHeader, stc1$1), api_custom_element("c-table", _cTable, stc2$1)])];
+  return [api_element("div", stc0$2, [api_custom_element("c-header", _cHeader, stc1$1), api_custom_element("c-table", _cTable, stc2)])];
   /*LWC compiler v2.32.1*/
 }
 var _tmpl$2 = registerTemplate(tmpl$2);
@@ -8517,26 +8538,26 @@ const stc1$2 = {
   },
   key: 1
 };
-const stc2$2 = {
+const stc2$1 = {
   classMap: {
     "col-12": true,
     "slot-container": true
   },
   key: 2
 };
-const stc3$1 = {
+const stc3 = {
   classMap: {
     "home-container": true
   },
   key: 3
 };
-const stc4$1 = {
+const stc4 = {
   key: 4
 };
 const stc5 = [];
 function tmpl$3($api, $cmp, $slotset, $ctx) {
   const {s: api_slot, h: api_element} = $api;
-  return [api_element("div", stc0$3, [api_element("div", stc1$2, [api_element("div", stc2$2, [api_element("div", stc3$1, [api_slot("", stc4$1, stc5, $slotset)])])])])];
+  return [api_element("div", stc0$3, [api_element("div", stc1$2, [api_element("div", stc2$1, [api_element("div", stc3, [api_slot("", stc4, stc5, $slotset)])])])])];
   /*LWC compiler v2.32.1*/
 }
 var _tmpl$3 = registerTemplate(tmpl$3);
