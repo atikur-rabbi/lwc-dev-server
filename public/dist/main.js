@@ -28,10 +28,10 @@ function fail(msg) {
 }
 var assert = /*#__PURE__*/Object.freeze({
   __proto__: null,
+  fail: fail,
   invariant: invariant,
-  isTrue: isTrue$1,
   isFalse: isFalse$1,
-  fail: fail
+  isTrue: isTrue$1
 });
 
 /*
@@ -85,6 +85,7 @@ const {
 const {
   charCodeAt: StringCharCodeAt,
   replace: StringReplace,
+  split: StringSplit,
   slice: StringSlice,
   toLowerCase: StringToLowerCase
 } = String.prototype;
@@ -155,6 +156,9 @@ function getPropertyDescriptor(o, p) {
  * The above list of 46 aria attributes is consistent with the following resources:
  * https://github.com/w3c/aria/pull/708/files#diff-eacf331f0ffc35d4b482f1d15a887d3bR11060
  * https://wicg.github.io/aom/spec/aria-reflection.html
+ *
+ * NOTE: If you update this list, please update test files that implicitly reference this list!
+ * Searching the codebase for `aria-flowto` and `ariaFlowTo` should be good enough to find all usages.
  */
 const AriaPropertyNames = ['ariaActiveDescendant', 'ariaAtomic', 'ariaAutoComplete', 'ariaBusy', 'ariaChecked', 'ariaColCount', 'ariaColIndex', 'ariaColSpan', 'ariaControls', 'ariaCurrent', 'ariaDescribedBy', 'ariaDetails', 'ariaDisabled', 'ariaErrorMessage', 'ariaExpanded', 'ariaFlowTo', 'ariaHasPopup', 'ariaHidden', 'ariaInvalid', 'ariaKeyShortcuts', 'ariaLabel', 'ariaLabelledBy', 'ariaLevel', 'ariaLive', 'ariaModal', 'ariaMultiLine', 'ariaMultiSelectable', 'ariaOrientation', 'ariaOwns', 'ariaPlaceholder', 'ariaPosInSet', 'ariaPressed', 'ariaReadOnly', 'ariaRelevant', 'ariaRequired', 'ariaRoleDescription', 'ariaRowCount', 'ariaRowIndex', 'ariaRowSpan', 'ariaSelected', 'ariaSetSize', 'ariaSort', 'ariaValueMax', 'ariaValueMin', 'ariaValueNow', 'ariaValueText', 'role'];
 const {
@@ -174,6 +178,9 @@ const {
     AriaPropNameToAttrNameMap
   };
 })();
+// These attributes take either an ID or a list of IDs as values.
+// This includes aria-* attributes as well as the special non-ARIA "for" attribute
+const ID_REFERENCING_ATTRIBUTES_SET = new Set(['aria-activedescendant', 'aria-controls', 'aria-describedby', 'aria-details', 'aria-errormessage', 'aria-flowto', 'aria-labelledby', 'aria-owns', 'for']);
 
 /*
  * Copyright (c) 2018, salesforce.com, inc.
@@ -181,39 +188,11 @@ const {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-// Inspired from: https://mathiasbynens.be/notes/globalthis
-const _globalThis = /*@__PURE__*/function () {
-  // On recent browsers, `globalThis` is already defined. In this case return it directly.
-  if (typeof globalThis === 'object') {
-    return globalThis;
-  }
-  let _globalThis;
-  try {
-    // eslint-disable-next-line no-extend-native
-    Object.defineProperty(Object.prototype, '__magic__', {
-      get: function () {
-        return this;
-      },
-      configurable: true
-    });
-    // __magic__ is undefined in Safari 10 and IE10 and older.
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
-    _globalThis = __magic__;
-    // @ts-ignore
-    delete Object.prototype.__magic__;
-  } catch (ex) {
-    // In IE8, Object.defineProperty only works on DOM objects.
-  } finally {
-    // If the magic above fails for some reason we assume that we are in a legacy browser.
-    // Assume `window` exists in this case.
-    if (typeof _globalThis === 'undefined') {
-      // @ts-ignore
-      _globalThis = window;
-    }
-  }
-  return _globalThis;
-}();
+// See browser support for globalThis:
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis#browser_compatibility
+/* istanbul ignore next */
+// @ts-ignore
+const _globalThis = typeof globalThis === 'object' ? globalThis : window;
 
 /*
  * Copyright (c) 2018, salesforce.com, inc.
@@ -227,6 +206,8 @@ const KEY__SHADOW_STATIC = '$shadowStaticNode$';
 const KEY__SHADOW_TOKEN = '$shadowToken$';
 const KEY__SYNTHETIC_MODE = '$$lwc-synthetic-mode';
 const KEY__SCOPED_CSS = '$scoped$';
+const KEY__NATIVE_GET_ELEMENT_BY_ID = '$nativeGetElementById$';
+const KEY__NATIVE_QUERY_SELECTOR_ALL = '$nativeQuerySelectorAll$';
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
@@ -319,9 +300,15 @@ function htmlAttributeToProperty(attrName) {
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 // Increment whenever the LWC template compiler changes
-const LWC_VERSION = "2.32.1";
+const LWC_VERSION = "2.36.0";
 const LWC_VERSION_COMMENT_REGEX = /\/\*LWC compiler v([\d.]+)\*\/\s*}/;
-/** version: 2.32.1 */
+if (!_globalThis.lwcRuntimeFlags) {
+  Object.defineProperty(_globalThis, 'lwcRuntimeFlags', {
+    value: create(null)
+  });
+}
+const lwcRuntimeFlags = _globalThis.lwcRuntimeFlags;
+/** version: 2.36.0 */
 
 /**
  * Copyright (C) 2018 salesforce.com, inc.
@@ -333,8 +320,8 @@ const LWC_VERSION_COMMENT_REGEX = /\/\*LWC compiler v([\d.]+)\*\/\s*}/;
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-function detect(propName) {
-  return getOwnPropertyDescriptor$1(Element.prototype, propName) === undefined;
+function detect(propName, prototype) {
+  return isUndefined$1(getOwnPropertyDescriptor$1(prototype, propName));
 }
 
 /*
@@ -343,34 +330,17 @@ function detect(propName) {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const nodeToAriaPropertyValuesMap = new WeakMap();
-function getAriaPropertyMap(elm) {
-  let map = nodeToAriaPropertyValuesMap.get(elm);
-  if (map === undefined) {
-    map = {};
-    nodeToAriaPropertyValuesMap.set(elm, map);
-  }
-  return map;
-}
-function getNormalizedAriaPropertyValue(value) {
-  return value == null ? null : String(value);
-}
-function createAriaPropertyPropertyDescriptor(propName, attrName) {
+function createAriaPropertyPropertyDescriptor(attrName) {
+  // Note that we need to call this.{get,set,has,remove}Attribute rather than dereferencing
+  // from Element.prototype, because these methods are overridden in LightningElement.
   return {
     get() {
-      const map = getAriaPropertyMap(this);
-      if (hasOwnProperty$1.call(map, propName)) {
-        return map[propName];
-      }
-      // otherwise just reflect what's in the attribute
+      // reflect what's in the attribute
       return this.hasAttribute(attrName) ? this.getAttribute(attrName) : null;
     },
     set(newValue) {
-      const normalizedValue = getNormalizedAriaPropertyValue(newValue);
-      const map = getAriaPropertyMap(this);
-      map[propName] = normalizedValue;
       // reflect into the corresponding attribute
-      if (newValue === null) {
+      if (isNull(newValue)) {
         this.removeAttribute(attrName);
       } else {
         this.setAttribute(attrName, newValue);
@@ -380,13 +350,10 @@ function createAriaPropertyPropertyDescriptor(propName, attrName) {
     enumerable: true
   };
 }
-function patch$1(propName) {
-  // Typescript is inferring the wrong function type for this particular
-  // overloaded method: https://github.com/Microsoft/TypeScript/issues/27972
-  // @ts-ignore type-mismatch
+function patch$1(propName, prototype) {
   const attrName = AriaPropNameToAttrNameMap[propName];
-  const descriptor = createAriaPropertyPropertyDescriptor(propName, attrName);
-  Object.defineProperty(Element.prototype, propName, descriptor);
+  const descriptor = createAriaPropertyPropertyDescriptor(attrName);
+  defineProperty(prototype, propName, descriptor);
 }
 
 /*
@@ -395,20 +362,16 @@ function patch$1(propName) {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const ElementPrototypeAriaPropertyNames = keys(AriaPropNameToAttrNameMap);
-for (let i = 0, len = ElementPrototypeAriaPropertyNames.length; i < len; i += 1) {
-  const propName = ElementPrototypeAriaPropertyNames[i];
-  if (detect(propName)) {
-    patch$1(propName);
+function applyAriaReflection(prototype = Element.prototype) {
+  const ElementPrototypeAriaPropertyNames = keys(AriaPropNameToAttrNameMap);
+  for (let i = 0, len = ElementPrototypeAriaPropertyNames.length; i < len; i += 1) {
+    const propName = ElementPrototypeAriaPropertyNames[i];
+    if (detect(propName, prototype)) {
+      patch$1(propName, prototype);
+    }
   }
 }
-if (!_globalThis.lwcRuntimeFlags) {
-  Object.defineProperty(_globalThis, 'lwcRuntimeFlags', {
-    value: create(null)
-  });
-}
-const lwcRuntimeFlags = _globalThis.lwcRuntimeFlags;
-/** version: 2.32.1 */
+/** version: 2.36.0 */
 
 /*
  * Copyright (c) 2018, salesforce.com, inc.
@@ -416,46 +379,64 @@ const lwcRuntimeFlags = _globalThis.lwcRuntimeFlags;
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-// Only used in LWC's Karma tests
-// @ts-ignore
-if ( typeof __karma__ !== 'undefined') {
-  window.addEventListener('test-dummy-flag', () => {
-    let hasFlag = false;
-    if (lwcRuntimeFlags.DUMMY_TEST_FLAG) {
-      hasFlag = true;
-    }
-    window.dispatchEvent(new CustomEvent('has-dummy-flag', {
-      detail: {
-        package: '@lwc/engine-dom',
-        hasFlag
+if (!lwcRuntimeFlags.DISABLE_ARIA_REFLECTION_POLYFILL) {
+  // If DISABLE_ARIA_REFLECTION_POLYFILL is false, then we need to apply the ARIA reflection polyfill globally,
+  // i.e. to the global Element.prototype
+  applyAriaReflection();
+}
+/**
+ * Report to the current dispatcher, if there is one.
+ * @param reportingEventId
+ * @param payload - data to report
+ */
+function report(reportingEventId, payload) {
+}
+
+/*
+ * Copyright (c) 2018, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
+function getComponentTag(vm) {
+  return `<${StringToLowerCase.call(vm.tagName)}>`;
+}
+// TODO [#1695]: Unify getComponentStack and getErrorComponentStack
+function getComponentStack(vm) {
+  const stack = [];
+  let prefix = '';
+  while (!isNull(vm.owner)) {
+    ArrayPush$1.call(stack, prefix + getComponentTag(vm));
+    vm = vm.owner;
+    prefix += '\t';
+  }
+  return ArrayJoin.call(stack, '\n');
+}
+function getErrorComponentStack(vm) {
+  const wcStack = [];
+  let currentVm = vm;
+  while (!isNull(currentVm)) {
+    ArrayPush$1.call(wcStack, getComponentTag(currentVm));
+    currentVm = currentVm.owner;
+  }
+  return wcStack.reverse().join('\n\t');
+}
+
+/*
+ * Copyright (c) 2018, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
+function addErrorComponentStack(vm, error) {
+  if (!isFrozen(error) && isUndefined$1(error.wcStack)) {
+    const wcStack = getErrorComponentStack(vm);
+    defineProperty(error, 'wcStack', {
+      get() {
+        return wcStack;
       }
-    }));
-  });
-}
-
-/* proxy-compat-disable */
-
-/*
- * Copyright (c) 2018, salesforce.com, inc.
- * All rights reserved.
- * SPDX-License-Identifier: MIT
- * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
- */
-// Only used in LWC's Karma tests
-// @ts-ignore
-if ( typeof __karma__ !== 'undefined') {
-  window.addEventListener('test-dummy-flag', () => {
-    let hasFlag = false;
-    if (lwcRuntimeFlags.DUMMY_TEST_FLAG) {
-      hasFlag = true;
-    }
-    window.dispatchEvent(new CustomEvent('has-dummy-flag', {
-      detail: {
-        package: '@lwc/engine-core',
-        hasFlag
-      }
-    }));
-  });
+    });
+  }
 }
 
 /*
@@ -464,84 +445,33 @@ if ( typeof __karma__ !== 'undefined') {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-let nextTickCallbackQueue = [];
-const SPACE_CHAR = 32;
-const EmptyObject = seal(create(null));
-const EmptyArray = seal([]);
-function flushCallbackQueue() {
-  {
-    if (nextTickCallbackQueue.length === 0) {
-      throw new Error(`Internal Error: If callbackQueue is scheduled, it is because there must be at least one callback on this pending queue.`);
-    }
+const alreadyLoggedMessages = new Set();
+function log(method, message, vm, once) {
+  let msg = `[LWC ${method}]: ${message}`;
+  if (!isUndefined$1(vm)) {
+    msg = `${msg}\n${getComponentStack(vm)}`;
   }
-  const callbacks = nextTickCallbackQueue;
-  nextTickCallbackQueue = []; // reset to a new queue
-  for (let i = 0, len = callbacks.length; i < len; i += 1) {
-    callbacks[i]();
+  if (once) {
+    if (alreadyLoggedMessages.has(msg)) {
+      return;
+    }
+    alreadyLoggedMessages.add(msg);
+  }
+  try {
+    throw new Error(msg);
+  } catch (e) {
+    /* eslint-disable-next-line no-console */
+    console[method](e);
   }
 }
-function addCallbackToNextTick(callback) {
-  {
-    if (!isFunction$1(callback)) {
-      throw new Error(`Internal Error: addCallbackToNextTick() can only accept a function callback`);
-    }
-  }
-  if (nextTickCallbackQueue.length === 0) {
-    Promise.resolve().then(flushCallbackQueue);
-  }
-  ArrayPush$1.call(nextTickCallbackQueue, callback);
+function logError(message, vm) {
+  log('error', message, vm, false);
 }
-// Borrowed from Vue template compiler.
-// https://github.com/vuejs/vue/blob/531371b818b0e31a989a06df43789728f23dc4e8/src/platforms/web/util/style.js#L5-L16
-const DECLARATION_DELIMITER = /;(?![^(]*\))/g;
-const PROPERTY_DELIMITER = /:(.+)/;
-function parseStyleText(cssText) {
-  const styleMap = {};
-  const declarations = cssText.split(DECLARATION_DELIMITER);
-  for (const declaration of declarations) {
-    if (declaration) {
-      const [prop, value] = declaration.split(PROPERTY_DELIMITER);
-      if (prop !== undefined && value !== undefined) {
-        styleMap[prop.trim()] = value.trim();
-      }
-    }
-  }
-  return styleMap;
+function logWarn(message, vm) {
+  log('warn', message, vm, false);
 }
-// Make a shallow copy of an object but omit the given key
-function cloneAndOmitKey(object, keyToOmit) {
-  const result = {};
-  for (const key of Object.keys(object)) {
-    if (key !== keyToOmit) {
-      result[key] = object[key];
-    }
-  }
-  return result;
-}
-function flattenStylesheets(stylesheets) {
-  const list = [];
-  for (const stylesheet of stylesheets) {
-    if (!Array.isArray(stylesheet)) {
-      list.push(stylesheet);
-    } else {
-      list.push(...flattenStylesheets(stylesheet));
-    }
-  }
-  return list;
-}
-// Set a ref (lwc:ref) on a VM, from a template API
-function setRefVNode(vm, ref, vnode) {
-  if ( isUndefined$1(vm.refVNodes)) {
-    throw new Error('refVNodes must be defined when setting a ref');
-  }
-  // If this method is called, then vm.refVNodes is set as the template has refs.
-  // If not, then something went wrong and we threw an error above.
-  const refVNodes = vm.refVNodes;
-  // In cases of conflict (two elements with the same ref), prefer, the last one,
-  // in depth-first traversal order.
-  if (!(ref in refVNodes) || refVNodes[ref].key < vnode.key) {
-    refVNodes[ref] = vnode;
-  }
+function logWarnOnce(message, vm) {
+  log('warn', message, vm, true);
 }
 
 /*
@@ -664,70 +594,84 @@ function createReactiveObserver(callback) {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-function getComponentTag(vm) {
-  return `<${StringToLowerCase.call(vm.tagName)}>`;
-}
-// TODO [#1695]: Unify getComponentStack and getErrorComponentStack
-function getComponentStack(vm) {
-  const stack = [];
-  let prefix = '';
-  while (!isNull(vm.owner)) {
-    ArrayPush$1.call(stack, prefix + getComponentTag(vm));
-    vm = vm.owner;
-    prefix += '\t';
+let nextTickCallbackQueue = [];
+const SPACE_CHAR = 32;
+const EmptyObject = seal(create(null));
+const EmptyArray = seal([]);
+function flushCallbackQueue() {
+  {
+    if (nextTickCallbackQueue.length === 0) {
+      throw new Error(`Internal Error: If callbackQueue is scheduled, it is because there must be at least one callback on this pending queue.`);
+    }
   }
-  return ArrayJoin.call(stack, '\n');
-}
-function getErrorComponentStack(vm) {
-  const wcStack = [];
-  let currentVm = vm;
-  while (!isNull(currentVm)) {
-    ArrayPush$1.call(wcStack, getComponentTag(currentVm));
-    currentVm = currentVm.owner;
+  const callbacks = nextTickCallbackQueue;
+  nextTickCallbackQueue = []; // reset to a new queue
+  for (let i = 0, len = callbacks.length; i < len; i += 1) {
+    callbacks[i]();
   }
-  return wcStack.reverse().join('\n\t');
 }
-
-/*
- * Copyright (c) 2018, salesforce.com, inc.
- * All rights reserved.
- * SPDX-License-Identifier: MIT
- * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
- */
-function addErrorComponentStack(vm, error) {
-  if (!isFrozen(error) && isUndefined$1(error.wcStack)) {
-    const wcStack = getErrorComponentStack(vm);
-    defineProperty(error, 'wcStack', {
-      get() {
-        return wcStack;
+function addCallbackToNextTick(callback) {
+  {
+    if (!isFunction$1(callback)) {
+      throw new Error(`Internal Error: addCallbackToNextTick() can only accept a function callback`);
+    }
+  }
+  if (nextTickCallbackQueue.length === 0) {
+    Promise.resolve().then(flushCallbackQueue);
+  }
+  ArrayPush$1.call(nextTickCallbackQueue, callback);
+}
+// Borrowed from Vue template compiler.
+// https://github.com/vuejs/vue/blob/531371b818b0e31a989a06df43789728f23dc4e8/src/platforms/web/util/style.js#L5-L16
+const DECLARATION_DELIMITER = /;(?![^(]*\))/g;
+const PROPERTY_DELIMITER = /:(.+)/;
+function parseStyleText(cssText) {
+  const styleMap = {};
+  const declarations = cssText.split(DECLARATION_DELIMITER);
+  for (const declaration of declarations) {
+    if (declaration) {
+      const [prop, value] = declaration.split(PROPERTY_DELIMITER);
+      if (prop !== undefined && value !== undefined) {
+        styleMap[prop.trim()] = value.trim();
       }
-    });
+    }
   }
+  return styleMap;
 }
-
-/*
- * Copyright (c) 2018, salesforce.com, inc.
- * All rights reserved.
- * SPDX-License-Identifier: MIT
- * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
- */
-function log(method, message, vm) {
-  let msg = `[LWC ${method}]: ${message}`;
-  if (!isUndefined$1(vm)) {
-    msg = `${msg}\n${getComponentStack(vm)}`;
+// Make a shallow copy of an object but omit the given key
+function cloneAndOmitKey(object, keyToOmit) {
+  const result = {};
+  for (const key of keys(object)) {
+    if (key !== keyToOmit) {
+      result[key] = object[key];
+    }
   }
-  try {
-    throw new Error(msg);
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    console[method](e);
+  return result;
+}
+function flattenStylesheets(stylesheets) {
+  const list = [];
+  for (const stylesheet of stylesheets) {
+    if (!isArray$1(stylesheet)) {
+      list.push(stylesheet);
+    } else {
+      list.push(...flattenStylesheets(stylesheet));
+    }
   }
+  return list;
 }
-function logError(message, vm) {
-  log('error', message, vm);
-}
-function logWarn(message, vm) {
-  log('warn', message, vm);
+// Set a ref (lwc:ref) on a VM, from a template API
+function setRefVNode(vm, ref, vnode) {
+  if ( isUndefined$1(vm.refVNodes)) {
+    throw new Error('refVNodes must be defined when setting a ref');
+  }
+  // If this method is called, then vm.refVNodes is set as the template has refs.
+  // If not, then something went wrong and we threw an error above.
+  const refVNodes = vm.refVNodes;
+  // In cases of conflict (two elements with the same ref), prefer, the last one,
+  // in depth-first traversal order.
+  if (!(ref in refVNodes) || refVNodes[ref].key < vnode.key) {
+    refVNodes[ref] = vnode;
+  }
 }
 
 /*
@@ -769,7 +713,10 @@ function offsetPropertyErrorMessage(name) {
 // Global HTML Attributes & Properties
 // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
-const globalHTMLProperties = assign(create(null), {
+//
+// If you update this list, check for test files that recapitulate the same list. Searching the codebase
+// for e.g. "dropzone" should suffice.
+const globalHTMLProperties = {
   accessKey: {
     attribute: 'accesskey'
   },
@@ -854,7 +801,7 @@ const globalHTMLProperties = assign(create(null), {
   role: {
     attribute: 'role'
   }
-});
+};
 let controlledElement = null;
 let controlledAttributeName;
 function isAttributeLocked(elm, attrName) {
@@ -1555,7 +1502,7 @@ class ReactiveProxyHandler extends BaseProxyHandler {
     valueMutated(originalTarget, key);
     return true;
   }
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 const getterMap = new WeakMap();
 const setterMap = new WeakMap();
@@ -1640,7 +1587,7 @@ class ReadOnlyHandler extends BaseProxyHandler {
       throw new Error(`Invalid mutation: Cannot defineProperty "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
     }
   }
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 function extract(objectOrArray) {
   if (isArray(objectOrArray)) {
@@ -1893,7 +1840,6 @@ function createBridgeToElementDescriptor(propName, descriptor) {
     }
   };
 }
-const EMPTY_REFS = freeze(create(null));
 const refsCache = new WeakMap();
 /**
  * This class is the base class for any LWC element.
@@ -2181,7 +2127,6 @@ LightningElement.prototype = {
     }
     const {
       refVNodes,
-      hasRefVNodes,
       cmpTemplate
     } = vm;
     // If the `cmpTemplate` is null, that means that the template has not been rendered yet. Most likely this occurs
@@ -2195,15 +2140,9 @@ LightningElement.prototype = {
     // were introduced, we return undefined if the template has no refs defined
     // anywhere. This fixes components that may want to add an expando called `refs`
     // and are checking if it exists with `if (this.refs)`  before adding it.
-    // Note it is not sufficient to just check if `refVNodes` is null or empty,
-    // because a template may have `lwc:ref` defined within a falsy `if:true` block.
-    if (!hasRefVNodes) {
-      return;
-    }
-    // For templates that are using `lwc:ref`, if there are no refs currently available
-    // (e.g. refs inside of a falsy `if:true` block), we return an empty object.
+    // Note we use a null refVNodes to indicate that the template has no refs defined.
     if (isNull(refVNodes)) {
-      return EMPTY_REFS;
+      return;
     }
     // The refNodes can be cached based on the refVNodes, since the refVNodes
     // are recreated from scratch every time the template is rendered.
@@ -2317,6 +2256,17 @@ for (const propName in HTMLElementOriginalDescriptors) {
   lightningBasedDescriptors[propName] = createBridgeToElementDescriptor(propName, HTMLElementOriginalDescriptors[propName]);
 }
 defineProperties(LightningElement.prototype, lightningBasedDescriptors);
+function applyAriaReflectionToLightningElement() {
+  // If ARIA reflection is not applied globally to Element.prototype, or if we are running server-side,
+  // apply it to LightningElement.prototype.
+  // This allows `this.aria*` property accessors to work from inside a component, and to reflect `aria-*` attrs.
+  applyAriaReflection(LightningElement.prototype);
+}
+// The reason for this odd if/else branching is limitations in @lwc/features:
+// https://github.com/salesforce/lwc/blob/master/packages/%40lwc/features/README.md#only-works-with-if-statements
+if (lwcRuntimeFlags.DISABLE_ARIA_REFLECTION_POLYFILL) {
+  applyAriaReflectionToLightningElement();
+}
 defineProperty(LightningElement, 'CustomElementConstructor', {
   get() {
     // If required, a runtime-specific implementation must be defined.
@@ -2341,6 +2291,292 @@ function createObservedFieldPropertyDescriptor(key) {
     enumerable: true,
     configurable: true
   };
+}
+
+/*
+ * Copyright (c) 2018, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
+const DeprecatedWiredElementHost = '$$DeprecatedWiredElementHostKey$$';
+const DeprecatedWiredParamsMeta = '$$DeprecatedWiredParamsMetaKey$$';
+const WIRE_DEBUG_ENTRY = '@wire';
+const WireMetaMap = new Map();
+class WireContextRegistrationEvent extends CustomEvent {
+  constructor(adapterToken, {
+    setNewContext,
+    setDisconnectedCallback
+  }) {
+    super(adapterToken, {
+      bubbles: true,
+      composed: true
+    });
+    defineProperties(this, {
+      setNewContext: {
+        value: setNewContext
+      },
+      setDisconnectedCallback: {
+        value: setDisconnectedCallback
+      }
+    });
+  }
+  /*LWC compiler v2.36.0*/
+}
+function createFieldDataCallback(vm, name) {
+  return value => {
+    updateComponentValue(vm, name, value);
+  };
+}
+function createMethodDataCallback(vm, method) {
+  return value => {
+    // dispatching new value into the wired method
+    runWithBoundaryProtection(vm, vm.owner, noop, () => {
+      // job
+      method.call(vm.component, value);
+    }, noop);
+  };
+}
+function createConfigWatcher(component, configCallback, callbackWhenConfigIsReady) {
+  let hasPendingConfig = false;
+  // creating the reactive observer for reactive params when needed
+  const ro = createReactiveObserver(() => {
+    if (hasPendingConfig === false) {
+      hasPendingConfig = true;
+      // collect new config in the micro-task
+      Promise.resolve().then(() => {
+        hasPendingConfig = false;
+        // resetting current reactive params
+        ro.reset();
+        // dispatching a new config due to a change in the configuration
+        computeConfigAndUpdate();
+      });
+    }
+  });
+  const computeConfigAndUpdate = () => {
+    let config;
+    ro.observe(() => config = configCallback(component));
+    // eslint-disable-next-line @lwc/lwc-internal/no-invalid-todo
+    // TODO: dev-mode validation of config based on the adapter.configSchema
+    // @ts-ignore it is assigned in the observe() callback
+    callbackWhenConfigIsReady(config);
+  };
+  return {
+    computeConfigAndUpdate,
+    ro
+  };
+}
+function createContextWatcher(vm, wireDef, callbackWhenContextIsReady) {
+  const {
+    adapter
+  } = wireDef;
+  const adapterContextToken = getAdapterToken(adapter);
+  if (isUndefined$1(adapterContextToken)) {
+    return; // no provider found, nothing to be done
+  }
+
+  const {
+    elm,
+    context: {
+      wiredConnecting,
+      wiredDisconnecting
+    },
+    renderer: {
+      dispatchEvent
+    }
+  } = vm;
+  // waiting for the component to be connected to formally request the context via the token
+  ArrayPush$1.call(wiredConnecting, () => {
+    // This event is responsible for connecting the host element with another
+    // element in the composed path that is providing contextual data. The provider
+    // must be listening for a special dom event with the name corresponding to the value of
+    // `adapterContextToken`, which will remain secret and internal to this file only to
+    // guarantee that the linkage can be forged.
+    const contextRegistrationEvent = new WireContextRegistrationEvent(adapterContextToken, {
+      setNewContext(newContext) {
+        // eslint-disable-next-line @lwc/lwc-internal/no-invalid-todo
+        // TODO: dev-mode validation of config based on the adapter.contextSchema
+        callbackWhenContextIsReady(newContext);
+      },
+      setDisconnectedCallback(disconnectCallback) {
+        // adds this callback into the disconnect bucket so it gets disconnected from parent
+        // the the element hosting the wire is disconnected
+        ArrayPush$1.call(wiredDisconnecting, disconnectCallback);
+      }
+    });
+    dispatchEvent(elm, contextRegistrationEvent);
+  });
+}
+function createConnector(vm, name, wireDef) {
+  const {
+    method,
+    adapter,
+    configCallback,
+    dynamic
+  } = wireDef;
+  let debugInfo;
+  {
+    const wiredPropOrMethod = isUndefined$1(method) ? name : method.name;
+    debugInfo = create(null);
+    debugInfo.wasDataProvisionedForConfig = false;
+    vm.debugInfo[WIRE_DEBUG_ENTRY][wiredPropOrMethod] = debugInfo;
+  }
+  const fieldOrMethodCallback = isUndefined$1(method) ? createFieldDataCallback(vm, name) : createMethodDataCallback(vm, method);
+  const dataCallback = value => {
+    {
+      debugInfo.data = value;
+      // Note: most of the time, the data provided is for the current config, but there may be
+      // some conditions in which it does not, ex:
+      // race conditions in a poor network while the adapter does not cancel a previous request.
+      debugInfo.wasDataProvisionedForConfig = true;
+    }
+    fieldOrMethodCallback(value);
+  };
+  let context;
+  let connector;
+  // Workaround to pass the component element associated to this wire adapter instance.
+  defineProperty(dataCallback, DeprecatedWiredElementHost, {
+    value: vm.elm
+  });
+  defineProperty(dataCallback, DeprecatedWiredParamsMeta, {
+    value: dynamic
+  });
+  runWithBoundaryProtection(vm, vm, noop, () => {
+    // job
+    connector = new adapter(dataCallback);
+  }, noop);
+  const updateConnectorConfig = config => {
+    // every time the config is recomputed due to tracking,
+    // this callback will be invoked with the new computed config
+    runWithBoundaryProtection(vm, vm, noop, () => {
+      // job
+      if ("development" !== 'production') {
+        debugInfo.config = config;
+        debugInfo.context = context;
+        debugInfo.wasDataProvisionedForConfig = false;
+      }
+      connector.update(config, context);
+    }, noop);
+  };
+  // Computes the current wire config and calls the update method on the wire adapter.
+  // If it has params, we will need to observe changes in the next tick.
+  const {
+    computeConfigAndUpdate,
+    ro
+  } = createConfigWatcher(vm.component, configCallback, updateConnectorConfig);
+  // if the adapter needs contextualization, we need to watch for new context and push it alongside the config
+  if (!isUndefined$1(adapter.contextSchema)) {
+    createContextWatcher(vm, wireDef, newContext => {
+      // every time the context is pushed into this component,
+      // this callback will be invoked with the new computed context
+      if (context !== newContext) {
+        context = newContext;
+        // Note: when new context arrives, the config will be recomputed and pushed along side the new
+        // context, this is to preserve the identity characteristics, config should not have identity
+        // (ever), while context can have identity
+        if (vm.state === 1 /* VMState.connected */) {
+          computeConfigAndUpdate();
+        }
+      }
+    });
+  }
+  return {
+    // @ts-ignore the boundary protection executes sync, connector is always defined
+    connector,
+    computeConfigAndUpdate,
+    resetConfigWatcher: () => ro.reset()
+  };
+}
+const AdapterToTokenMap = new Map();
+function getAdapterToken(adapter) {
+  return AdapterToTokenMap.get(adapter);
+}
+function storeWiredMethodMeta(descriptor, adapter, configCallback, dynamic) {
+  // support for callable adapters
+  if (adapter.adapter) {
+    adapter = adapter.adapter;
+  }
+  const method = descriptor.value;
+  const def = {
+    adapter,
+    method,
+    configCallback,
+    dynamic
+  };
+  WireMetaMap.set(descriptor, def);
+}
+function storeWiredFieldMeta(descriptor, adapter, configCallback, dynamic) {
+  // support for callable adapters
+  if (adapter.adapter) {
+    adapter = adapter.adapter;
+  }
+  const def = {
+    adapter,
+    configCallback,
+    dynamic
+  };
+  WireMetaMap.set(descriptor, def);
+}
+function installWireAdapters(vm) {
+  const {
+    context,
+    def: {
+      wire
+    }
+  } = vm;
+  {
+    vm.debugInfo[WIRE_DEBUG_ENTRY] = create(null);
+  }
+  const wiredConnecting = context.wiredConnecting = [];
+  const wiredDisconnecting = context.wiredDisconnecting = [];
+  for (const fieldNameOrMethod in wire) {
+    const descriptor = wire[fieldNameOrMethod];
+    const wireDef = WireMetaMap.get(descriptor);
+    {
+      assert.invariant(wireDef, `Internal Error: invalid wire definition found.`);
+    }
+    if (!isUndefined$1(wireDef)) {
+      const {
+        connector,
+        computeConfigAndUpdate,
+        resetConfigWatcher
+      } = createConnector(vm, fieldNameOrMethod, wireDef);
+      const hasDynamicParams = wireDef.dynamic.length > 0;
+      ArrayPush$1.call(wiredConnecting, () => {
+        connector.connect();
+        if (!lwcRuntimeFlags.ENABLE_WIRE_SYNC_EMIT) {
+          if (hasDynamicParams) {
+            Promise.resolve().then(computeConfigAndUpdate);
+            return;
+          }
+        }
+        computeConfigAndUpdate();
+      });
+      ArrayPush$1.call(wiredDisconnecting, () => {
+        connector.disconnect();
+        resetConfigWatcher();
+      });
+    }
+  }
+}
+function connectWireAdapters(vm) {
+  const {
+    wiredConnecting
+  } = vm.context;
+  for (let i = 0, len = wiredConnecting.length; i < len; i += 1) {
+    wiredConnecting[i]();
+  }
+}
+function disconnectWireAdapters(vm) {
+  const {
+    wiredDisconnecting
+  } = vm.context;
+  runWithBoundaryProtection(vm, vm, noop, () => {
+    // job
+    for (let i = 0, len = wiredDisconnecting.length; i < len; i += 1) {
+      wiredDisconnecting[i]();
+    }
+  }, noop);
 }
 function createPublicPropertyDescriptor(key) {
   return {
@@ -2678,13 +2914,6 @@ function getDecoratorsMeta(Ctor) {
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
 let warned = false;
-// @ts-ignore
-if ( typeof __karma__ !== 'undefined') {
-  // @ts-ignore
-  window.__lwcResetWarnedOnVersionMismatch = () => {
-    warned = false;
-  };
-}
 function checkVersionMismatch(func, type) {
   const versionMatcher = func.toString().match(LWC_VERSION_COMMENT_REGEX);
   if (!isNull(versionMatcher) && !warned) {
@@ -2812,7 +3041,7 @@ function HTMLBridgeElementFactory(SuperClass, props, methods) {
    */
   if (isFunction$1(SuperClass)) {
     HTMLBridgeElement = class extends SuperClass {
-      /*LWC compiler v2.32.1*/
+      /*LWC compiler v2.36.0*/
     };
   } else {
     HTMLBridgeElement = function () {
@@ -2877,6 +3106,20 @@ function HTMLBridgeElementFactory(SuperClass, props, methods) {
   return HTMLBridgeElement;
 }
 const BaseBridgeElement = HTMLBridgeElementFactory(HTMLElementConstructor, getOwnPropertyNames$1(HTMLElementOriginalDescriptors), []);
+{
+  // This ARIA reflection only really makes sense in the browser. On the server, there is no `renderedCallback()`,
+  // so you cannot do e.g. `this.template.querySelector('x-child').ariaBusy = 'true'`. So we don't need to expose
+  // ARIA props outside the LightningElement
+  if (lwcRuntimeFlags.DISABLE_ARIA_REFLECTION_POLYFILL) {
+    // If ARIA reflection is not applied globally to Element.prototype, apply it to HTMLBridgeElement.prototype.
+    // This allows `elm.aria*` property accessors to work from outside a component, and to reflect `aria-*` attrs.
+    // This is especially important because the template compiler compiles aria-* attrs on components to aria* props
+    //
+    // Also note that we apply this to BaseBridgeElement.prototype to avoid excessively redefining property
+    // accessors inside the HTMLBridgeElementFactory.
+    applyAriaReflection(BaseBridgeElement.prototype);
+  }
+}
 freeze(BaseBridgeElement);
 seal(BaseBridgeElement.prototype);
 
@@ -3203,6 +3446,9 @@ function updateStylesheetToken(vm, template) {
     stylesheets: newStylesheets,
     stylesheetToken: newStylesheetToken
   } = template;
+  const {
+    stylesheets: newVmStylesheets
+  } = vm;
   const isSyntheticShadow = renderMode === 1 /* RenderMode.Shadow */ && shadowMode === 1 /* ShadowMode.Synthetic */;
   const {
     hasScopedStyles
@@ -3226,7 +3472,9 @@ function updateStylesheetToken(vm, template) {
   }
   // Apply the new template styling token to the host element, if the new template has any
   // associated stylesheets. In the case of light DOM, also ensure there is at least one scoped stylesheet.
-  if (!isUndefined$1(newStylesheets) && newStylesheets.length !== 0) {
+  const hasNewStylesheets = hasStyles(newStylesheets);
+  const hasNewVmStylesheets = hasStyles(newVmStylesheets);
+  if (hasNewStylesheets || hasNewVmStylesheets) {
     newToken = newStylesheetToken;
   }
   // Set the new styling token on the host element
@@ -3298,9 +3546,16 @@ function getStylesheetsContent(vm, template) {
     stylesheets,
     stylesheetToken
   } = template;
+  const {
+    stylesheets: vmStylesheets
+  } = vm;
   let content = [];
-  if (!isUndefined$1(stylesheets) && stylesheets.length !== 0) {
+  if (hasStyles(stylesheets)) {
     content = evaluateStylesheetsContent(stylesheets, stylesheetToken, vm);
+  }
+  // VM (component) stylesheets apply after template stylesheets
+  if (hasStyles(vmStylesheets)) {
+    ArrayPush$1.apply(content, evaluateStylesheetsContent(vmStylesheets, stylesheetToken, vm));
   }
   return content;
 }
@@ -3340,9 +3595,12 @@ function getStylesheetTokenHost(vnode) {
     template
   } = getComponentInternalDef(vnode.ctor);
   const {
+    vm
+  } = vnode;
+  const {
     stylesheetToken
   } = template;
-  return !isUndefined$1(stylesheetToken) && computeHasScopedStyles(template) ? makeHostToken(stylesheetToken) : null;
+  return !isUndefined$1(stylesheetToken) && computeHasScopedStyles(template, vm) ? makeHostToken(stylesheetToken) : null;
 }
 function getNearestNativeShadowComponent(vm) {
   const owner = getNearestShadowComponent(vm);
@@ -4012,6 +4270,28 @@ function patchCustomElement(n1, n2, parent, renderer) {
       // in fallback mode, the allocation will always set children to
       // empty and delegate the real allocation to the slot elements
       allocateChildren(n2, vm);
+      // Solves an edge case with slotted VFragments in native shadow mode.
+      //
+      // During allocation, in native shadow, slotted VFragment nodes are flattened and their text delimiters are removed
+      // to avoid interfering with native slot behavior. When this happens, if any of the fragments
+      // were not stable, the children must go through the dynamic diffing algo.
+      //
+      // If the new children (n2.children) contain no VFragments, but the previous children (n1.children) were dynamic,
+      // the new nodes must be marked dynamic so that all nodes are properly updated. The only indicator that the new
+      // nodes need to be dynamic comes from the previous children, so we check that to determine whether we need to
+      // mark the new children dynamic.
+      //
+      // Example:
+      // n1.children: [div, VFragment('', div, null, ''), div] => [div, div, null, div]; // marked dynamic
+      // n2.children: [div, null, div] => [div, null, div] // marked ???
+      const {
+        shadowMode,
+        renderMode
+      } = vm;
+      if (shadowMode == 0 /* ShadowMode.Native */ && renderMode !== 0 /* RenderMode.Light */ && hasDynamicChildren(n1.children)) {
+        // No-op if children has already been marked dynamic by 'allocateChildren()'.
+        markAsDynamicChildren(n2.children);
+      }
     }
     // in fallback mode, the children will be always empty, so, nothing
     // will happen, but in native, it does allocate the light dom
@@ -4204,7 +4484,6 @@ function allocateChildren(vnode, vm) {
   //
   // In case #2, we will always get a fresh VCustomElement.
   const children = vnode.aChildren || vnode.children;
-  vm.aChildren = children;
   const {
     renderMode,
     shadowMode
@@ -4217,14 +4496,60 @@ function allocateChildren(vnode, vm) {
       logError(`Invalid usage of 'lwc:slot-data' on ${getComponentTag(vm)} tag. Scoped slot content can only be passed to a light dom child.`);
     }
   }
+  // If any of the children being allocated are VFragments, we remove the text delimiters and flatten all immediate
+  // children VFragments to avoid them interfering with default slot behavior.
+  const allocatedChildren = flattenFragmentsInChildren(children);
+  vnode.children = allocatedChildren;
+  vm.aChildren = allocatedChildren;
   if (shadowMode === 1 /* ShadowMode.Synthetic */ || renderMode === 0 /* RenderMode.Light */) {
     // slow path
-    allocateInSlot(vm, children, vnode.owner);
+    allocateInSlot(vm, allocatedChildren, vnode.owner);
     // save the allocated children in case this vnode is reused.
-    vnode.aChildren = children;
+    vnode.aChildren = allocatedChildren;
     // every child vnode is now allocated, and the host should receive none directly, it receives them via the shadow!
     vnode.children = EmptyArray;
   }
+}
+/**
+ * Flattens the contents of all VFragments in an array of VNodes, removes the text delimiters on those VFragments, and
+ * marks the resulting children array as dynamic. Uses a stack (array) to iteratively traverse the nested VFragments
+ * and avoid the perf overhead of creating/destroying throwaway arrays/objects in a recursive approach.
+ *
+ * With the delimiters removed, the contents are marked dynamic so they are diffed correctly.
+ *
+ * This function is used for slotted VFragments to avoid the text delimiters interfering with slotting functionality.
+ */
+function flattenFragmentsInChildren(children) {
+  const flattenedChildren = [];
+  // Initialize our stack with the direct children of the custom component and check whether we have a VFragment.
+  // If no VFragment is found in children, we don't need to traverse anything or mark the children dynamic and can return early.
+  const nodeStack = [];
+  let fragmentFound = false;
+  for (let i = children.length - 1; i > -1; i -= 1) {
+    const child = children[i];
+    ArrayPush$1.call(nodeStack, child);
+    fragmentFound = fragmentFound || !!(child && isVFragment(child));
+  }
+  if (!fragmentFound) {
+    return children;
+  }
+  let currentNode;
+  while (!isUndefined$1(currentNode = ArrayPop.call(nodeStack))) {
+    if (!isNull(currentNode) && isVFragment(currentNode)) {
+      const fChildren = currentNode.children;
+      // Ignore the start and end text node delimiters
+      for (let i = fChildren.length - 2; i > 0; i -= 1) {
+        ArrayPush$1.call(nodeStack, fChildren[i]);
+      }
+    } else {
+      ArrayPush$1.call(flattenedChildren, currentNode);
+    }
+  }
+  // We always mark the children as dynamic because nothing generates stable VFragments yet.
+  // If/when stable VFragments are generated by the compiler, this code should be updated to
+  // not mark dynamic if all flattened VFragments were stable.
+  markAsDynamicChildren(flattenedChildren);
+  return flattenedChildren;
 }
 function createViewModelHook(elm, vnode, renderer) {
   let vm = getAssociatedVMIfPresent(elm);
@@ -4250,20 +4575,18 @@ function createViewModelHook(elm, vnode, renderer) {
   }
   return vm;
 }
-/**
- * Collects all slots into a SlotSet, traversing through VFragment Nodes
- */
-function collectSlots(vm, children, cmpSlotsMapping) {
+function allocateInSlot(vm, children, owner) {
   var _a, _b;
+  const {
+    cmpSlots: {
+      slotAssignments: oldSlotsMapping
+    }
+  } = vm;
+  const cmpSlotsMapping = create(null);
+  // Collect all slots into cmpSlotsMapping
   for (let i = 0, len = children.length; i < len; i += 1) {
     const vnode = children[i];
     if (isNull(vnode)) {
-      continue;
-    }
-    // Dive further iff the content is wrapped in a VFragment
-    if (isVFragment(vnode)) {
-      // Remove the text delimiter nodes to avoid overriding default slot content
-      collectSlots(vm, vnode.children.slice(1, -1), cmpSlotsMapping);
       continue;
     }
     let slotName = '';
@@ -4272,18 +4595,14 @@ function collectSlots(vm, children, cmpSlotsMapping) {
     } else if (isVScopedSlotFragment(vnode)) {
       slotName = vnode.slotName;
     }
-    const vnodes = cmpSlotsMapping[slotName] = cmpSlotsMapping[slotName] || [];
+    // Can't use toString here because Symbol(1).toString() is 'Symbol(1)'
+    // but elm.setAttribute('slot', Symbol(1)) is an error.
+    // the following line also throws same error for symbols
+    // Similar for Object.create(null)
+    const normalizedSlotName = '' + slotName;
+    const vnodes = cmpSlotsMapping[normalizedSlotName] = cmpSlotsMapping[normalizedSlotName] || [];
     ArrayPush$1.call(vnodes, vnode);
   }
-}
-function allocateInSlot(vm, children, owner) {
-  const {
-    cmpSlots: {
-      slotAssignments: oldSlotsMapping
-    }
-  } = vm;
-  const cmpSlotsMapping = create(null);
-  collectSlots(vm, children, cmpSlotsMapping);
   vm.cmpSlots = {
     owner,
     slotAssignments: cmpSlotsMapping
@@ -4314,14 +4633,14 @@ function allocateInSlot(vm, children, owner) {
   }
 }
 // Using a WeakMap instead of a WeakSet because this one works in IE11 :(
-const FromIteration = new WeakMap();
-// dynamic children means it was generated by an iteration
-// in a template, and will require a more complex diffing algo.
+const DynamicChildren = new WeakMap();
+// dynamic children means it was either generated by an iteration in a template
+// or part of an unstable fragment, and will require a more complex diffing algo.
 function markAsDynamicChildren(children) {
-  FromIteration.set(children, 1);
+  DynamicChildren.set(children, 1);
 }
 function hasDynamicChildren(children) {
-  return FromIteration.has(children);
+  return DynamicChildren.has(children);
 }
 function createKeyToOldIdx(children, beginIdx, endIdx) {
   const map = {};
@@ -5147,7 +5466,7 @@ function evaluateTemplate(vm, html) {
         // Create a brand new template cache for the swapped templated.
         context.tplCache = create(null);
         // Set the computeHasScopedStyles property in the context, to avoid recomputing it repeatedly.
-        context.hasScopedStyles = computeHasScopedStyles(html);
+        context.hasScopedStyles = computeHasScopedStyles(html, vm);
         // Update the scoping token on the host element.
         updateStylesheetToken(vm, html);
         // Evaluate, create stylesheet and cache the produced VNode for future
@@ -5162,9 +5481,7 @@ function evaluateTemplate(vm, html) {
         setActiveVM(vm);
       }
       // reset the refs; they will be set during the tmpl() instantiation
-      const hasRefVNodes = Boolean(html.hasRefs);
-      vm.hasRefVNodes = hasRefVNodes;
-      vm.refVNodes = hasRefVNodes ? create(null) : null;
+      vm.refVNodes = html.hasRefs ? create(null) : null;
       // right before producing the vnodes, we clear up all internal references
       // to custom elements from the template.
       vm.velements = [];
@@ -5189,11 +5506,8 @@ function evaluateTemplate(vm, html) {
   }
   return vnodes;
 }
-function computeHasScopedStyles(template) {
-  const {
-    stylesheets
-  } = template;
-  if (!isUndefined$1(stylesheets)) {
+function computeHasScopedStylesInStylesheets(stylesheets) {
+  if (hasStyles(stylesheets)) {
     for (let i = 0; i < stylesheets.length; i++) {
       if (isTrue(stylesheets[i][KEY__SCOPED_CSS])) {
         return true;
@@ -5201,6 +5515,16 @@ function computeHasScopedStyles(template) {
     }
   }
   return false;
+}
+function computeHasScopedStyles(template, vm) {
+  const {
+    stylesheets
+  } = template;
+  const vmStylesheets = !isUndefined$1(vm) ? vm.stylesheets : null;
+  return computeHasScopedStylesInStylesheets(stylesheets) || computeHasScopedStylesInStylesheets(vmStylesheets);
+}
+function hasStyles(stylesheets) {
+  return !isUndefined$1(stylesheets) && !isNull(stylesheets) && stylesheets.length > 0;
 }
 
 /*
@@ -5320,6 +5644,8 @@ Ctor, {
 }) {
   if (isFunction$1(Ctor)) {
     {
+      // There is no point in running this in production, because the version mismatch check relies
+      // on code comments which are stripped out in production by minifiers
       checkVersionMismatch(Ctor, 'component');
     }
     signedTemplateMap.set(Ctor, tmpl);
@@ -5364,7 +5690,7 @@ function markComponentAsDirty(vm) {
 const cmpEventListenerMap = new WeakMap();
 function getWrappedComponentsListener(vm, listener) {
   if (!isFunction$1(listener)) {
-    throw new TypeError(); // avoiding problems with non-valid listeners
+    throw new TypeError('Expected an EventListener but received ' + typeof listener); // avoiding problems with non-valid listeners
   }
 
   let wrappedListener = cmpEventListenerMap.get(listener);
@@ -5493,7 +5819,6 @@ function createVM(elm, ctor, renderer, options) {
     mode,
     owner,
     refVNodes: null,
-    hasRefVNodes: false,
     children: EmptyArray,
     aChildren: EmptyArray,
     velements: EmptyArray,
@@ -5518,6 +5843,7 @@ function createVM(elm, ctor, renderer, options) {
     // Properties set right after VM creation.
     tro: null,
     shadowMode: null,
+    stylesheets: null,
     // Properties set by the LightningElement constructor.
     component: null,
     shadowRoot: null,
@@ -5530,6 +5856,7 @@ function createVM(elm, ctor, renderer, options) {
   {
     vm.debugInfo = create(null);
   }
+  vm.stylesheets = computeStylesheets(vm, def.ctor);
   vm.shadowMode = computeShadowMode(vm, renderer);
   vm.tro = getTemplateReactiveObserver(vm);
   {
@@ -5547,6 +5874,61 @@ function createVM(elm, ctor, renderer, options) {
     installWireAdapters(vm);
   }
   return vm;
+}
+function validateComponentStylesheets(vm, stylesheets) {
+  let valid = true;
+  const validate = arrayOrStylesheet => {
+    if (isArray$1(arrayOrStylesheet)) {
+      for (let i = 0; i < arrayOrStylesheet.length; i++) {
+        validate(arrayOrStylesheet[i]);
+      }
+    } else if (!isFunction$1(arrayOrStylesheet)) {
+      // function assumed to be a stylesheet factory
+      valid = false;
+    }
+  };
+  if (!isArray$1(stylesheets)) {
+    valid = false;
+  } else {
+    validate(stylesheets);
+  }
+  return valid;
+}
+// Validate and flatten any stylesheets defined as `static stylesheets`
+function computeStylesheets(vm, ctor) {
+  if (lwcRuntimeFlags.ENABLE_PROGRAMMATIC_STYLESHEETS) {
+    warnOnStylesheetsMutation(ctor);
+    const {
+      stylesheets
+    } = ctor;
+    if (!isUndefined$1(stylesheets)) {
+      const valid = validateComponentStylesheets(vm, stylesheets);
+      if (valid) {
+        return flattenStylesheets(stylesheets);
+      } else {
+        logError(`static stylesheets must be an array of CSS stylesheets. Found invalid stylesheets on <${vm.tagName}>`, vm);
+      }
+    }
+  }
+  return null;
+}
+function warnOnStylesheetsMutation(ctor) {
+  {
+    let {
+      stylesheets
+    } = ctor;
+    defineProperty(ctor, 'stylesheets', {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return stylesheets;
+      },
+      set(newValue) {
+        logWarnOnce(`Dynamically setting the "stylesheets" static property on ${ctor.name} ` + 'will not affect the stylesheets injected.');
+        stylesheets = newValue;
+      }
+    });
+  }
 }
 function computeShadowMode(vm, renderer) {
   const {
@@ -5899,284 +6281,240 @@ function runWithBoundaryProtection(vm, owner, pre, job, post) {
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const DeprecatedWiredElementHost = '$$DeprecatedWiredElementHostKey$$';
-const DeprecatedWiredParamsMeta = '$$DeprecatedWiredParamsMetaKey$$';
-const WIRE_DEBUG_ENTRY = '@wire';
-const WireMetaMap = new Map();
-class WireContextRegistrationEvent extends CustomEvent {
-  constructor(adapterToken, {
-    setNewContext,
-    setDisconnectedCallback
-  }) {
-    super(adapterToken, {
-      bubbles: true,
-      composed: true
-    });
-    defineProperties(this, {
-      setNewContext: {
-        value: setNewContext
-      },
-      setDisconnectedCallback: {
-        value: setDisconnectedCallback
-      }
-    });
+//
+// The goal of this code is to detect invalid cross-root ARIA references in synthetic shadow DOM.
+// These invalid references should be fixed before the offending components can be migrated to native shadow DOM.
+// When invalid usage is detected, we warn in dev mode and call the reporting API if enabled.
+// See: https://lwc.dev/guide/accessibility#link-ids-and-aria-attributes-from-different-templates
+//
+// Use the unpatched native getElementById/querySelectorAll rather than the synthetic one
+const getElementById = _globalThis[KEY__NATIVE_GET_ELEMENT_BY_ID];
+const querySelectorAll = _globalThis[KEY__NATIVE_QUERY_SELECTOR_ALL];
+function isSyntheticShadowRootInstance(rootNode) {
+  return rootNode !== document && isTrue(rootNode.synthetic);
+}
+function reportViolation$1(source, target, attrName) {
+  // The vm is either for the source, the target, or both. Either one or both must be using synthetic
+  // shadow for a violation to be detected.
+  let vm = getAssociatedVMIfPresent(source.getRootNode().host);
+  if (isUndefined$1(vm)) {
+    vm = getAssociatedVMIfPresent(target.getRootNode().host);
   }
-  /*LWC compiler v2.32.1*/
-}
-function createFieldDataCallback(vm, name) {
-  return value => {
-    updateComponentValue(vm, name, value);
-  };
-}
-function createMethodDataCallback(vm, method) {
-  return value => {
-    // dispatching new value into the wired method
-    runWithBoundaryProtection(vm, vm.owner, noop, () => {
-      // job
-      method.call(vm.component, value);
-    }, noop);
-  };
-}
-function createConfigWatcher(component, configCallback, callbackWhenConfigIsReady) {
-  let hasPendingConfig = false;
-  // creating the reactive observer for reactive params when needed
-  const ro = createReactiveObserver(() => {
-    if (hasPendingConfig === false) {
-      hasPendingConfig = true;
-      // collect new config in the micro-task
-      Promise.resolve().then(() => {
-        hasPendingConfig = false;
-        // resetting current reactive params
-        ro.reset();
-        // dispatching a new config due to a change in the configuration
-        computeConfigAndUpdate();
-      });
-    }
+  if (isUndefined$1(vm)) {
+    // vm should never be undefined here, but just to be safe, bail out and don't report
+    return;
+  }
+  report(0 /* ReportingEventId.CrossRootAriaInSyntheticShadow */, {
+    tagName: vm.tagName,
+    attributeName: attrName
   });
-  const computeConfigAndUpdate = () => {
-    let config;
-    ro.observe(() => config = configCallback(component));
-    // eslint-disable-next-line @lwc/lwc-internal/no-invalid-todo
-    // TODO: dev-mode validation of config based on the adapter.configSchema
-    // @ts-ignore it is assigned in the observe() callback
-    callbackWhenConfigIsReady(config);
-  };
-  return {
-    computeConfigAndUpdate,
-    ro
-  };
+  {
+    // Avoid excessively logging to the console in the case of duplicates.
+    logWarnOnce(`Element <${source.tagName.toLowerCase()}> uses attribute "${attrName}" to reference element ` + `<${target.tagName.toLowerCase()}>, which is not in the same shadow root. This will break in native shadow DOM. ` + `For details, see: https://lwc.dev/guide/accessibility#link-ids-and-aria-attributes-from-different-templates`, vm);
+  }
 }
-function createContextWatcher(vm, wireDef, callbackWhenContextIsReady) {
-  const {
-    adapter
-  } = wireDef;
-  const adapterContextToken = getAdapterToken(adapter);
-  if (isUndefined$1(adapterContextToken)) {
-    return; // no provider found, nothing to be done
+function parseIdRefAttributeValue(attrValue) {
+  // split on whitespace and skip empty strings after splitting
+  return isString(attrValue) ? ArrayFilter.call(StringSplit.call(attrValue, /\s+/), Boolean) : [];
+}
+function detectSyntheticCrossRootAria(elm, attrName, attrValue) {
+  const root = elm.getRootNode();
+  if (!isSyntheticShadowRootInstance(root)) {
+    return;
+  }
+  if (attrName === 'id') {
+    // elm is the target, find the source
+    if (!isString(attrValue) || attrValue.length === 0) {
+      // if our id is null or empty, nobody can reference us
+      return;
+    }
+    for (const idRefAttrName of ID_REFERENCING_ATTRIBUTES_SET) {
+      // Query all global elements with this attribute. The attribute selector syntax `~=` is for values
+      // that reference multiple IDs, separated by whitespace.
+      const query = `[${idRefAttrName}~="${CSS.escape(attrValue)}"]`;
+      const sourceElements = querySelectorAll.call(document, query);
+      for (let i = 0; i < sourceElements.length; i++) {
+        const sourceElement = sourceElements[i];
+        const sourceRoot = sourceElement.getRootNode();
+        if (sourceRoot !== root) {
+          reportViolation$1(sourceElement, elm, idRefAttrName);
+          break;
+        }
+      }
+    }
+  } else {
+    // elm is the source, find the target
+    const ids = parseIdRefAttributeValue(attrValue);
+    for (const id of ids) {
+      const target = getElementById.call(document, id);
+      if (!isNull(target)) {
+        const targetRoot = target.getRootNode();
+        if (targetRoot !== root) {
+          // target element's shadow root is not the same as ours
+          reportViolation$1(elm, target, attrName);
+        }
+      }
+    }
+  }
+}
+let enabled = false;
+// We want to avoid patching globals whenever possible, so this should be tree-shaken out in prod-mode and if
+// reporting is not enabled. It should also only run once
+function enableDetection$1() {
+  if (enabled) {
+    return; // don't double-apply the patches
   }
 
+  enabled = true;
   const {
-    elm,
-    context: {
-      wiredConnecting,
-      wiredDisconnecting
-    },
-    renderer: {
-      dispatchEvent
+    setAttribute
+  } = Element.prototype;
+  // Detect calling `setAttribute` to set an idref or an id
+  assign(Element.prototype, {
+    setAttribute(attrName, attrValue) {
+      setAttribute.call(this, attrName, attrValue);
+      if (attrName === 'id' || ID_REFERENCING_ATTRIBUTES_SET.has(attrName)) {
+        detectSyntheticCrossRootAria(this, attrName, attrValue);
+      }
     }
-  } = vm;
-  // waiting for the component to be connected to formally request the context via the token
-  ArrayPush$1.call(wiredConnecting, () => {
-    // This event is responsible for connecting the host element with another
-    // element in the composed path that is providing contextual data. The provider
-    // must be listening for a special dom event with the name corresponding to the value of
-    // `adapterContextToken`, which will remain secret and internal to this file only to
-    // guarantee that the linkage can be forged.
-    const contextRegistrationEvent = new WireContextRegistrationEvent(adapterContextToken, {
-      setNewContext(newContext) {
-        // eslint-disable-next-line @lwc/lwc-internal/no-invalid-todo
-        // TODO: dev-mode validation of config based on the adapter.contextSchema
-        callbackWhenContextIsReady(newContext);
+  });
+  // Detect `elm.id = 'foo'`
+  const idDescriptor = getOwnPropertyDescriptor$1(Element.prototype, 'id');
+  if (!isUndefined$1(idDescriptor)) {
+    const {
+      get,
+      set
+    } = idDescriptor;
+    // These should always be a getter and a setter, but if someone is monkeying with the global descriptor, ignore it
+    if (isFunction$1(get) && isFunction$1(set)) {
+      defineProperty(Element.prototype, 'id', {
+        get() {
+          return get.call(this);
+        },
+        set(value) {
+          set.call(this, value);
+          detectSyntheticCrossRootAria(this, 'id', value);
+        },
+        // On the default descriptor for 'id', enumerable and configurable are true
+        enumerable: true,
+        configurable: true
+      });
+    }
+  }
+}
+// Our detection logic relies on some modern browser features. We can just skip reporting the data
+// for unsupported browsers
+function supportsCssEscape() {
+  return typeof CSS !== 'undefined' && isFunction$1(CSS.escape);
+}
+// If this page is not using synthetic shadow, then we don't need to install detection. Note
+// that we are assuming synthetic shadow is loaded before LWC.
+function isSyntheticShadowLoaded() {
+  // We should probably be calling `renderer.isSyntheticShadowDefined`, but 1) we don't have access to the renderer,
+  // and 2) this code needs to run in @lwc/engine-core, so it can access `logWarn()` and `report()`.
+  return hasOwnProperty$1.call(Element.prototype, KEY__SHADOW_TOKEN);
+}
+// Detecting cross-root ARIA in synthetic shadow only makes sense for the browser
+if (supportsCssEscape() && isSyntheticShadowLoaded()) {
+  // Always run detection in dev mode, so we can at least print to the console
+  {
+    enableDetection$1();
+  }
+}
+
+/*
+ * Copyright (c) 2018, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
+//
+// The goal of this code is to detect usages of non-standard reflected ARIA properties. These are caused by
+// legacy non-standard Element.prototype extensions added by the @lwc/aria-reflection package.
+//
+// See the README for @lwc/aria-reflection
+const NON_STANDARD_ARIA_PROPS = ['ariaActiveDescendant', 'ariaControls', 'ariaDescribedBy', 'ariaDetails', 'ariaErrorMessage', 'ariaFlowTo', 'ariaLabelledBy', 'ariaOwns'];
+function isLightningElement(elm) {
+  // The former case is for `this.prop` (inside component) and the latter is for `element.prop` (outside component).
+  // In both cases, we apply the non-standard prop even when the global polyfill is disabled, so this is kosher.
+  return elm instanceof LightningElement || elm instanceof BaseBridgeElement;
+}
+function findVM(elm) {
+  // If it's a shadow DOM component, then it has a host
+  const {
+    host
+  } = elm.getRootNode();
+  const vm = isUndefined$1(host) ? undefined : getAssociatedVMIfPresent(host);
+  if (!isUndefined$1(vm)) {
+    return vm;
+  }
+  // Else it might be a light DOM component. Walk up the tree trying to find the owner
+  let parentElement = elm;
+  while (!isNull(parentElement = parentElement.parentElement)) {
+    if (isLightningElement(parentElement)) {
+      const vm = getAssociatedVMIfPresent(parentElement);
+      if (!isUndefined$1(vm)) {
+        return vm;
+      }
+    }
+  }
+  // If we return undefined, it's because the element was rendered wholly outside a LightningElement
+}
+
+function checkAndReportViolation(elm, prop) {
+  if (!isLightningElement(elm)) {
+    const vm = findVM(elm);
+    {
+      logWarnOnce(`Element <${elm.tagName.toLowerCase()}> ` + (isUndefined$1(vm) ? '' : `owned by <${vm.elm.tagName.toLowerCase()}> `) + `uses non-standard property "${prop}". This will be removed in a future version of LWC. ` + `See https://lwc.dev/guide/accessibility#deprecated-aria-reflected-properties`);
+    }
+    report(2 /* ReportingEventId.NonStandardAriaReflection */, {
+      tagName: vm === null || vm === void 0 ? void 0 : vm.tagName,
+      propertyName: prop
+    });
+  }
+}
+function enableDetection() {
+  const {
+    prototype
+  } = Element;
+  for (const prop of NON_STANDARD_ARIA_PROPS) {
+    const descriptor = getOwnPropertyDescriptor$1(prototype, prop);
+    // The descriptor should exist because the @lwc/aria-reflection polyfill has run by now.
+    // This happens automatically because of the ordering of imports.
+    {
+      /* istanbul ignore if */
+      if (isUndefined$1(descriptor) || isUndefined$1(descriptor.get) || isUndefined$1(descriptor.set)) {
+        // should never happen
+        throw new Error('detect-non-standard-aria.ts loaded before @lwc/aria-reflection');
+      }
+    }
+    // @ts-ignore
+    const {
+      get,
+      set
+    } = descriptor;
+    defineProperty(prototype, prop, {
+      get() {
+        checkAndReportViolation(this, prop);
+        return get.call(this);
       },
-      setDisconnectedCallback(disconnectCallback) {
-        // adds this callback into the disconnect bucket so it gets disconnected from parent
-        // the the element hosting the wire is disconnected
-        ArrayPush$1.call(wiredDisconnecting, disconnectCallback);
-      }
-    });
-    dispatchEvent(elm, contextRegistrationEvent);
-  });
-}
-function createConnector(vm, name, wireDef) {
-  const {
-    method,
-    adapter,
-    configCallback,
-    dynamic
-  } = wireDef;
-  let debugInfo;
-  {
-    const wiredPropOrMethod = isUndefined$1(method) ? name : method.name;
-    debugInfo = create(null);
-    debugInfo.wasDataProvisionedForConfig = false;
-    vm.debugInfo[WIRE_DEBUG_ENTRY][wiredPropOrMethod] = debugInfo;
-  }
-  const fieldOrMethodCallback = isUndefined$1(method) ? createFieldDataCallback(vm, name) : createMethodDataCallback(vm, method);
-  const dataCallback = value => {
-    {
-      debugInfo.data = value;
-      // Note: most of the time, the data provided is for the current config, but there may be
-      // some conditions in which it does not, ex:
-      // race conditions in a poor network while the adapter does not cancel a previous request.
-      debugInfo.wasDataProvisionedForConfig = true;
-    }
-    fieldOrMethodCallback(value);
-  };
-  let context;
-  let connector;
-  // Workaround to pass the component element associated to this wire adapter instance.
-  defineProperty(dataCallback, DeprecatedWiredElementHost, {
-    value: vm.elm
-  });
-  defineProperty(dataCallback, DeprecatedWiredParamsMeta, {
-    value: dynamic
-  });
-  runWithBoundaryProtection(vm, vm, noop, () => {
-    // job
-    connector = new adapter(dataCallback);
-  }, noop);
-  const updateConnectorConfig = config => {
-    // every time the config is recomputed due to tracking,
-    // this callback will be invoked with the new computed config
-    runWithBoundaryProtection(vm, vm, noop, () => {
-      // job
-      if ("development" !== 'production') {
-        debugInfo.config = config;
-        debugInfo.context = context;
-        debugInfo.wasDataProvisionedForConfig = false;
-      }
-      connector.update(config, context);
-    }, noop);
-  };
-  // Computes the current wire config and calls the update method on the wire adapter.
-  // If it has params, we will need to observe changes in the next tick.
-  const {
-    computeConfigAndUpdate,
-    ro
-  } = createConfigWatcher(vm.component, configCallback, updateConnectorConfig);
-  // if the adapter needs contextualization, we need to watch for new context and push it alongside the config
-  if (!isUndefined$1(adapter.contextSchema)) {
-    createContextWatcher(vm, wireDef, newContext => {
-      // every time the context is pushed into this component,
-      // this callback will be invoked with the new computed context
-      if (context !== newContext) {
-        context = newContext;
-        // Note: when new context arrives, the config will be recomputed and pushed along side the new
-        // context, this is to preserve the identity characteristics, config should not have identity
-        // (ever), while context can have identity
-        if (vm.state === 1 /* VMState.connected */) {
-          computeConfigAndUpdate();
-        }
-      }
+      set(val) {
+        checkAndReportViolation(this, prop);
+        return set.call(this, val);
+      },
+      configurable: true,
+      enumerable: true
     });
   }
-  return {
-    // @ts-ignore the boundary protection executes sync, connector is always defined
-    connector,
-    computeConfigAndUpdate,
-    resetConfigWatcher: () => ro.reset()
-  };
 }
-const AdapterToTokenMap = new Map();
-function getAdapterToken(adapter) {
-  return AdapterToTokenMap.get(adapter);
-}
-function storeWiredMethodMeta(descriptor, adapter, configCallback, dynamic) {
-  // support for callable adapters
-  if (adapter.adapter) {
-    adapter = adapter.adapter;
-  }
-  const method = descriptor.value;
-  const def = {
-    adapter,
-    method,
-    configCallback,
-    dynamic
-  };
-  WireMetaMap.set(descriptor, def);
-}
-function storeWiredFieldMeta(descriptor, adapter, configCallback, dynamic) {
-  // support for callable adapters
-  if (adapter.adapter) {
-    adapter = adapter.adapter;
-  }
-  const def = {
-    adapter,
-    configCallback,
-    dynamic
-  };
-  WireMetaMap.set(descriptor, def);
-}
-function installWireAdapters(vm) {
-  const {
-    context,
-    def: {
-      wire
-    }
-  } = vm;
-  {
-    vm.debugInfo[WIRE_DEBUG_ENTRY] = create(null);
-  }
-  const wiredConnecting = context.wiredConnecting = [];
-  const wiredDisconnecting = context.wiredDisconnecting = [];
-  for (const fieldNameOrMethod in wire) {
-    const descriptor = wire[fieldNameOrMethod];
-    const wireDef = WireMetaMap.get(descriptor);
+// No point in running this code if we're not in a browser, or if the global polyfill is not loaded
+{
+  if (!lwcRuntimeFlags.DISABLE_ARIA_REFLECTION_POLYFILL) {
+    // Always run detection in dev mode, so we can at least print to the console
     {
-      assert.invariant(wireDef, `Internal Error: invalid wire definition found.`);
-    }
-    if (!isUndefined$1(wireDef)) {
-      const {
-        connector,
-        computeConfigAndUpdate,
-        resetConfigWatcher
-      } = createConnector(vm, fieldNameOrMethod, wireDef);
-      const hasDynamicParams = wireDef.dynamic.length > 0;
-      ArrayPush$1.call(wiredConnecting, () => {
-        connector.connect();
-        if (!lwcRuntimeFlags.ENABLE_WIRE_SYNC_EMIT) {
-          if (hasDynamicParams) {
-            Promise.resolve().then(computeConfigAndUpdate);
-            return;
-          }
-        }
-        computeConfigAndUpdate();
-      });
-      ArrayPush$1.call(wiredDisconnecting, () => {
-        connector.disconnect();
-        resetConfigWatcher();
-      });
+      enableDetection();
     }
   }
-}
-function connectWireAdapters(vm) {
-  const {
-    wiredConnecting
-  } = vm.context;
-  for (let i = 0, len = wiredConnecting.length; i < len; i += 1) {
-    wiredConnecting[i]();
-  }
-}
-function disconnectWireAdapters(vm) {
-  const {
-    wiredDisconnecting
-  } = vm.context;
-  runWithBoundaryProtection(vm, vm, noop, () => {
-    // job
-    for (let i = 0, len = wiredDisconnecting.length; i < len; i += 1) {
-      wiredDisconnecting[i]();
-    }
-  }, noop);
 }
 
 /*
@@ -6660,12 +6998,13 @@ function areCompatibleNodes(client, ssr, vnode, renderer) {
  */
 // See @lwc/engine-core/src/framework/template.ts
 const TEMPLATE_PROPS = ['slots', 'stylesheetToken', 'stylesheets', 'renderMode'];
-// Via https://www.npmjs.com/package/object-observer
-const ARRAY_MUTATION_METHODS = ['pop', 'push', 'shift', 'unshift', 'reverse', 'sort', 'fill', 'splice', 'copyWithin'];
 // Expandos that may be placed on a stylesheet factory function, and which are meaningful to LWC at runtime
-const STYLESHEET_FUNCTION_EXPANDOS = [
+const STYLESHEET_PROPS = [
 // SEE `KEY__SCOPED_CSS` in @lwc/style-compiler
 '$scoped$'];
+// Via https://www.npmjs.com/package/object-observer
+const ARRAY_MUTATION_METHODS = ['pop', 'push', 'shift', 'unshift', 'reverse', 'sort', 'fill', 'splice', 'copyWithin'];
+let mutationTrackingDisabled = false;
 function getOriginalArrayMethod(prop) {
   switch (prop) {
     case 'pop':
@@ -6688,7 +7027,17 @@ function getOriginalArrayMethod(prop) {
       return ArrayCopyWithin;
   }
 }
-let mutationWarningsSilenced = false;
+function reportViolation(type, eventId, prop) {
+  {
+    logWarnOnce(`Mutating the "${prop}" property on a ${type} ` + `is deprecated and will be removed in a future version of LWC. ` + `See: https://lwc.dev/guide/css#deprecated-template-mutation`);
+  }
+}
+function reportTemplateViolation(prop) {
+  reportViolation('template', 3 /* ReportingEventId.TemplateMutation */, prop);
+}
+function reportStylesheetViolation(prop) {
+  reportViolation('stylesheet', 4 /* ReportingEventId.StylesheetMutation */, prop);
+}
 // Warn if the user tries to mutate a stylesheets array, e.g.:
 // `tmpl.stylesheets.push(someStylesheetFunction)`
 function warnOnArrayMutation(stylesheets) {
@@ -6697,7 +7046,7 @@ function warnOnArrayMutation(stylesheets) {
   for (const prop of ARRAY_MUTATION_METHODS) {
     const originalArrayMethod = getOriginalArrayMethod(prop);
     stylesheets[prop] = function arrayMutationWarningWrapper() {
-      logError(`Mutating the "stylesheets" array on a template function ` + `is deprecated and may be removed in a future version of LWC.`);
+      reportTemplateViolation('stylesheets');
       // @ts-ignore
       return originalArrayMethod.apply(this, arguments);
     };
@@ -6706,8 +7055,7 @@ function warnOnArrayMutation(stylesheets) {
 // Warn if the user tries to mutate a stylesheet factory function, e.g.:
 // `stylesheet.$scoped$ = true`
 function warnOnStylesheetFunctionMutation(stylesheet) {
-  // We could warn on other properties, but in practice only certain expandos are meaningful to LWC at runtime
-  for (const prop of STYLESHEET_FUNCTION_EXPANDOS) {
+  for (const prop of STYLESHEET_PROPS) {
     let value = stylesheet[prop];
     defineProperty(stylesheet, prop, {
       enumerable: true,
@@ -6716,14 +7064,14 @@ function warnOnStylesheetFunctionMutation(stylesheet) {
         return value;
       },
       set(newValue) {
-        logError(`Dynamically setting the "${prop}" property on a stylesheet function ` + `is deprecated and may be removed in a future version of LWC.`);
+        reportStylesheetViolation(prop);
         value = newValue;
       }
     });
   }
 }
 // Warn on either array or stylesheet (function) mutation, in a deeply-nested array
-function warnOnStylesheetsMutation(stylesheets) {
+function trackStylesheetsMutation(stylesheets) {
   traverseStylesheets(stylesheets, subStylesheets => {
     if (isArray$1(subStylesheets)) {
       warnOnArrayMutation(subStylesheets);
@@ -6750,7 +7098,70 @@ function traverseStylesheets(stylesheets, callback) {
     }
   }
 }
+function trackMutations(tmpl) {
+  if (!isUndefined$1(tmpl.stylesheets)) {
+    trackStylesheetsMutation(tmpl.stylesheets);
+  }
+  for (const prop of TEMPLATE_PROPS) {
+    let value = tmpl[prop];
+    defineProperty(tmpl, prop, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return value;
+      },
+      set(newValue) {
+        if (!mutationTrackingDisabled) {
+          reportTemplateViolation(prop);
+        }
+        value = newValue;
+      }
+    });
+  }
+  const originalDescriptor = getOwnPropertyDescriptor$1(tmpl, 'stylesheetTokens');
+  defineProperty(tmpl, 'stylesheetTokens', {
+    enumerable: true,
+    configurable: true,
+    get: originalDescriptor.get,
+    set(value) {
+      reportTemplateViolation('stylesheetTokens');
+      // Avoid logging/reporting twice (for both stylesheetToken and stylesheetTokens)
+      mutationTrackingDisabled = true;
+      originalDescriptor.set.call(this, value);
+      mutationTrackingDisabled = false;
+    }
+  });
+}
+function addLegacyStylesheetTokensShim(tmpl) {
+  // When ENABLE_FROZEN_TEMPLATE is false, then we shim stylesheetTokens on top of stylesheetToken for anyone who
+  // is accessing the old internal API (backwards compat). Details: https://salesforce.quip.com/v1rmAFu2cKAr
+  defineProperty(tmpl, 'stylesheetTokens', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      const {
+        stylesheetToken
+      } = this;
+      if (isUndefined$1(stylesheetToken)) {
+        return stylesheetToken;
+      }
+      // Shim for the old `stylesheetTokens` property
+      // See https://github.com/salesforce/lwc/pull/2332/files#diff-7901555acef29969adaa6583185b3e9bce475cdc6f23e799a54e0018cb18abaa
+      return {
+        hostAttribute: `${stylesheetToken}-host`,
+        shadowAttribute: stylesheetToken
+      };
+    },
+    set(value) {
+      // If the value is null or some other exotic object, you would be broken anyway in the past
+      // because the engine would try to access hostAttribute/shadowAttribute, which would throw an error.
+      // However it may be undefined in newer versions of LWC, so we need to guard against that case.
+      this.stylesheetToken = isUndefined$1(value) ? undefined : value.shadowAttribute;
+    }
+  });
+}
 function freezeTemplate(tmpl) {
+  // TODO [#2782]: remove this flag and delete the legacy behavior
   if (lwcRuntimeFlags.ENABLE_FROZEN_TEMPLATE) {
     // Deep freeze the template
     freeze(tmpl);
@@ -6758,71 +7169,16 @@ function freezeTemplate(tmpl) {
       deepFreeze(tmpl.stylesheets);
     }
   } else {
-    // TODO [#2782]: remove this flag and delete the legacy behavior
-    // When ENABLE_FROZEN_TEMPLATE is false, then we shim stylesheetTokens on top of stylesheetToken for anyone who
-    // is accessing the old internal API (backwards compat). Details: https://salesforce.quip.com/v1rmAFu2cKAr
-    defineProperty(tmpl, 'stylesheetTokens', {
-      enumerable: true,
-      configurable: true,
-      get() {
-        const {
-          stylesheetToken
-        } = this;
-        if (isUndefined$1(stylesheetToken)) {
-          return stylesheetToken;
-        }
-        // Shim for the old `stylesheetTokens` property
-        // See https://github.com/salesforce/lwc/pull/2332/files#diff-7901555acef29969adaa6583185b3e9bce475cdc6f23e799a54e0018cb18abaa
-        return {
-          hostAttribute: `${stylesheetToken}-host`,
-          shadowAttribute: stylesheetToken
-        };
-      },
-      set(value) {
-        // If the value is null or some other exotic object, you would be broken anyway in the past
-        // because the engine would try to access hostAttribute/shadowAttribute, which would throw an error.
-        // However it may be undefined in newer versions of LWC, so we need to guard against that case.
-        this.stylesheetToken = isUndefined$1(value) ? undefined : value.shadowAttribute;
-      }
-    });
-    // When ENABLE_FROZEN_TEMPLATE is false, warn in dev mode whenever someone is mutating the template
+    // template is not frozen - shim, report, and warn
+    // this shim should be applied in both dev and prod
+    addLegacyStylesheetTokensShim(tmpl);
+    // When ENABLE_FROZEN_TEMPLATE is false, we want to warn in dev mode whenever someone is mutating the template
     {
-      if (!isUndefined$1(tmpl.stylesheets)) {
-        warnOnStylesheetsMutation(tmpl.stylesheets);
-      }
-      for (const prop of TEMPLATE_PROPS) {
-        let value = tmpl[prop];
-        defineProperty(tmpl, prop, {
-          enumerable: true,
-          configurable: true,
-          get() {
-            return value;
-          },
-          set(newValue) {
-            if (!mutationWarningsSilenced) {
-              logError(`Dynamically setting the "${prop}" property on a template function ` + `is deprecated and may be removed in a future version of LWC.`);
-            }
-            value = newValue;
-          }
-        });
-      }
-      const originalDescriptor = getOwnPropertyDescriptor$1(tmpl, 'stylesheetTokens');
-      defineProperty(tmpl, 'stylesheetTokens', {
-        enumerable: true,
-        configurable: true,
-        get: originalDescriptor.get,
-        set(value) {
-          logError(`Dynamically setting the "stylesheetTokens" property on a template function ` + `is deprecated and may be removed in a future version of LWC.`);
-          // Avoid logging twice (for both stylesheetToken and stylesheetTokens)
-          mutationWarningsSilenced = true;
-          originalDescriptor.set.call(this, value);
-          mutationWarningsSilenced = false;
-        }
-      });
+      trackMutations(tmpl);
     }
   }
 }
-/* version: 2.32.1 */
+/* version: 2.36.0 */
 
 /*
  * Copyright (c) 2018, salesforce.com, inc.
@@ -6922,15 +7278,6 @@ const supportsMutableAdoptedStyleSheets = supportsConstructableStylesheets && ge
 // Detect IE, via https://stackoverflow.com/a/9851769
 const isIE11 = !isUndefined$1(document.documentMode);
 const stylesheetCache = new Map();
-//
-// Test utilities
-//
-{
-  // @ts-ignore
-  window.__lwcResetGlobalStylesheets = () => {
-    stylesheetCache.clear();
-  };
-}
 function createFreshStyleElement(content) {
   const elm = document.createElement('style');
   elm.type = 'text/css';
@@ -7066,7 +7413,7 @@ function isCustomElementRegistryAvailable() {
     // invokes the DOM api with an .apply() or .call() to initialize any DOM api sub-classing,
     // which are not equipped to be initialized that way.
     class clazz extends HTMLElementAlias {
-      /*LWC compiler v2.32.1*/
+      /*LWC compiler v2.36.0*/
     }
     customElements.define('lwc-test-' + Math.floor(Math.random() * 1000000), clazz);
     new clazz();
@@ -7099,7 +7446,7 @@ const createCustomElementCompat = (tagName, upgradeCallback) => {
 const cachedConstructors = new Map();
 const elementsUpgradedOutsideLWC = new WeakSet();
 let elementBeingUpgradedByLWC = false;
-// Creates a constructor that is intended to be used as a vanilla custom element, except that the upgradeCallback is
+// Creates a constructor that is intended to be used directly as a custom element, except that the upgradeCallback is
 // passed in to the constructor so LWC can reuse the same custom element constructor for multiple components.
 // Another benefit is that only LWC can create components that actually do anything – if you do
 // `customElements.define('x-foo')`, then you don't have access to the upgradeCallback, so it's a dummy custom element.
@@ -7124,7 +7471,7 @@ const createUpgradableConstructor = (connectedCallback, disconnectedCallback) =>
         // Do we want to support this? Throw an error? Currently for backwards compat it's a no-op.
       }
     }
-    /*LWC compiler v2.32.1*/
+    /*LWC compiler v2.36.0*/
   }
   // Do not unnecessarily add a connectedCallback/disconnectedCallback, as it introduces perf overhead
   // See: https://github.com/salesforce/lwc/pull/3162#issuecomment-1311851174
@@ -7144,7 +7491,7 @@ const createUpgradableConstructor = (connectedCallback, disconnectedCallback) =>
   }
   return UpgradableConstructor;
 };
-const createCustomElementVanilla = (tagName, upgradeCallback, connectedCallback, disconnectedCallback) => {
+const createCustomElementUsingUpgradableConstructor = (tagName, upgradeCallback, connectedCallback, disconnectedCallback) => {
   // use global custom elements registry
   let UpgradableConstructor = cachedConstructors.get(tagName);
   if (isUndefined$1(UpgradableConstructor)) {
@@ -7171,7 +7518,7 @@ const createCustomElementVanilla = (tagName, upgradeCallback, connectedCallback,
  */
 /**
  * Create a scoped registry, i.e. a function that can create custom elements whose tag names
- * do not conflict with vanilla custom elements having the same tag name.
+ * do not conflict with third-party custom elements having the same tag name.
  */
 function createScopedRegistry() {
   if (!hasCustomElements) {
@@ -7330,7 +7677,7 @@ function createScopedRegistry() {
           (_a = definition.attributeChangedCallback) === null || _a === void 0 ? void 0 : _a.apply(this, [name, oldValue, newValue]);
         }
       }
-      /*LWC compiler v2.32.1*/
+      /*LWC compiler v2.36.0*/
     }
     PivotCtor.observedAttributes = [...registeredDefinition.observedAttributes];
     // TODO [#3000]: support case where registeredDefinition is not form-associated, but later definition is.
@@ -7718,7 +8065,7 @@ const createUserConstructor = (HTMLElementToExtend, upgradeCallback, connectedCa
         disconnectedCallback(this);
       }
     }
-    /*LWC compiler v2.32.1*/
+    /*LWC compiler v2.36.0*/
   };
 };
 function createCustomElementScoped(tagName, upgradeCallback, connectedCallback, disconnectedCallback) {
@@ -7741,10 +8088,10 @@ function createCustomElementScoped(tagName, upgradeCallback, connectedCallback, 
  * We have three modes for creating custom elements:
  *
  * 1. Compat (legacy) browser support (e.g. IE11). Totally custom, doesn't rely on native browser APIs.
- * 2. "Vanilla" custom elements registry. This system actually still allows us to have two LWC components with the
- *    same tag name, via a simple trick: every custom element constructor we define in the registry is basically
- *    the same. It's essentially a dummy `class extends HTMLElement` that accepts an `upgradeCallback` in its
- *    constructor, which allows us to have completely customized functionality for different components.
+ * 2. "Upgradable constructor" custom element. This allows us to have two LWC components with the same tag name,
+ *    via a trick: every custom element constructor we define in the registry is basically the same. It's essentially
+ *    a dummy `class extends HTMLElement` that accepts an `upgradeCallback` in its constructor ("upgradable
+ *    constructor"), which allows us to have completely customized functionality for different components.
  * 3. "Scoped" (or "pivot") custom elements. This relies on a sophisticated system that emulates the "scoped custom
  *    elements registry" proposal, with support for avoiding conflicts in tag names both between LWC components and
  *    between LWC components and third-party elements. This uses a similar trick to #2, but is much more complex
@@ -7755,8 +8102,8 @@ if (hasCustomElements) {
   if (lwcRuntimeFlags.ENABLE_SCOPED_CUSTOM_ELEMENT_REGISTRY) {
     createCustomElement = createCustomElementScoped;
   } else {
-    // use global custom elements registry (vanilla)
-    createCustomElement = createCustomElementVanilla;
+    // use the global registry, with an upgradable constructor for the defined custom element
+    createCustomElement = createCustomElementUsingUpgradableConstructor;
   }
 } else {
   // no registry available here
@@ -7810,10 +8157,10 @@ function rendererFactory(baseRenderer) {
     }
     var assert = /*#__PURE__*/Object.freeze({
       __proto__: null,
+      fail: fail,
       invariant: invariant,
-      isTrue: isTrue$1,
       isFalse: isFalse$1,
-      fail: fail
+      isTrue: isTrue$1
     });
     function isUndefined(obj) {
       return obj === undefined;
@@ -7821,7 +8168,7 @@ function rendererFactory(baseRenderer) {
     function isNull(obj) {
       return obj === null;
     }
-    /** version: 2.32.1 */
+    /** version: 2.36.0 */
 
     /*
      * Copyright (c) 2018, salesforce.com, inc.
@@ -8159,7 +8506,7 @@ function buildCustomElementConstructor(Ctor) {
     attributeChangedCallback(name, oldValue, newValue) {
       attributeChangedCallback.call(this, name, oldValue, newValue);
     }
-    /*LWC compiler v2.32.1*/
+    /*LWC compiler v2.36.0*/
   }, _a.observedAttributes = observedAttributes, _a;
 }
 
@@ -8250,20 +8597,20 @@ defineProperty(LightningElement, 'CustomElementConstructor', {
 });
 freeze(LightningElement);
 seal(LightningElement.prototype);
-/* version: 2.32.1 */
+/* version: 2.36.0 */
 
 function stylesheet(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ".icon-back" + shadowSelector + " {z-index: -1;position: absolute;bottom: 35px;}" + ((useActualHostSelector ? ":host{--header-background-color: var(--at-blue-12, #06223C);--font-color: var(--body-font-color, #ffffff);}" : hostSelector + "{--header-background-color: var(--at-blue-12, #06223C);--font-color: var(--body-font-color, #ffffff);}")) + "*" + shadowSelector + " {--padding-left: 30px;}.home-container" + shadowSelector + " {margin: 0;background: var(--header-background-color);color: var(--font-color);padding: 20px 30px;}";
-  /*LWC compiler v2.32.1*/
+  return ".icon-back" + shadowSelector + " {z-index: -1;position: absolute;bottom: 35px;}" + ((useActualHostSelector ? ":host{" : hostSelector + "{")) + "--header-background-color: var(--at-blue-12, #06223C);--font-color: var(--body-font-color, #ffffff);}*" + shadowSelector + " {--padding-left: 30px;}.home-container" + shadowSelector + " {margin: 0;background: var(--header-background-color);color: var(--font-color);padding: 20px 30px;}";
+  /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets = [stylesheet];
 
 function stylesheet$1(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   return "h1" + shadowSelector + " {color: rgb(54, 20, 146);background-color: aliceblue;padding: 5px;}";
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$1 = [stylesheet$1];
 
@@ -8273,7 +8620,7 @@ const stc0 = {
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {d: api_dynamic_text, t: api_text, h: api_element} = $api;
   return [api_element("h1", stc0, [api_text(api_dynamic_text($cmp.label) + "!!")])];
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _tmpl = registerTemplate(tmpl);
 tmpl.stylesheets = [];
@@ -8282,9 +8629,7 @@ tmpl.stylesheets = [];
 if (_implicitStylesheets$1) {
   tmpl.stylesheets.push.apply(tmpl.stylesheets, _implicitStylesheets$1);
 }
-if (_implicitStylesheets$1 || undefined) {
-  tmpl.stylesheetToken = "c-header_header";
-}
+tmpl.stylesheetToken = "c-header_header";
 freezeTemplate(tmpl);
 
 class Header extends LightningElement {
@@ -8292,7 +8637,7 @@ class Header extends LightningElement {
     super(...args);
     this.label = "";
   }
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 registerDecorators(Header, {
   publicProps: {
@@ -8312,10 +8657,11 @@ const $fragment1 = parseFragment`<div${3}><h1${3}>Test Components</h1></div>`;
 function tmpl$1($api, $cmp, $slotset, $ctx) {
   const {st: api_static_fragment} = $api;
   return [api_static_fragment($fragment1(), 1)];
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _tmpl$1 = registerTemplate(tmpl$1);
 tmpl$1.stylesheets = [];
+tmpl$1.stylesheetToken = "c-test_test";
 freezeTemplate(tmpl$1);
 
 class Test extends LightningElement {
@@ -8328,7 +8674,7 @@ class Test extends LightningElement {
     // assetClassTableData?.console.log(assetClassTableData);
     // console.log(assetClassTableData);
   }
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _cTest = registerComponent(Test, {
   tmpl: _tmpl$1
@@ -8349,7 +8695,7 @@ const stc2 = {
 function tmpl$2($api, $cmp, $slotset, $ctx) {
   const {c: api_custom_element, h: api_element} = $api;
   return [api_element("div", stc0$1, [api_custom_element("c-header", _cHeader, stc1), api_custom_element("c-test", _cTest, stc2)])];
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _tmpl$2 = registerTemplate(tmpl$2);
 tmpl$2.stylesheets = [];
@@ -8358,13 +8704,11 @@ tmpl$2.stylesheets = [];
 if (_implicitStylesheets) {
   tmpl$2.stylesheets.push.apply(tmpl$2.stylesheets, _implicitStylesheets);
 }
-if (_implicitStylesheets || undefined) {
-  tmpl$2.stylesheetToken = "c-app_app";
-}
+tmpl$2.stylesheetToken = "c-app_app";
 freezeTemplate(tmpl$2);
 
 class App extends LightningElement {
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var App$1 = registerComponent(App, {
   tmpl: _tmpl$2
@@ -8373,8 +8717,8 @@ var App$1 = registerComponent(App, {
 function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}" : hostSelector + " {--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}")) + "h1" + shadowSelector + ", h2" + shadowSelector + " {margin: 0;padding: 4px 10px;}";
-  /*LWC compiler v2.32.1*/
+  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}h1" + shadowSelector + ", h2" + shadowSelector + " {margin: 0;padding: 4px 10px;}";
+  /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$2 = [stylesheet$2];
 
@@ -8410,7 +8754,7 @@ const stc5 = [];
 function tmpl$3($api, $cmp, $slotset, $ctx) {
   const {s: api_slot, h: api_element} = $api;
   return [api_element("div", stc0$2, [api_element("div", stc1$1, [api_element("div", stc2$1, [api_element("div", stc3, [api_slot("", stc4, stc5, $slotset)])])])])];
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var _tmpl$3 = registerTemplate(tmpl$3);
 tmpl$3.slots = [""];
@@ -8420,13 +8764,11 @@ tmpl$3.stylesheets = [];
 if (_implicitStylesheets$2) {
   tmpl$3.stylesheets.push.apply(tmpl$3.stylesheets, _implicitStylesheets$2);
 }
-if (_implicitStylesheets$2 || undefined) {
-  tmpl$3.stylesheetToken = "c-theme_theme";
-}
+tmpl$3.stylesheetToken = "c-theme_theme";
 freezeTemplate(tmpl$3);
 
 class Theme extends LightningElement {
-  /*LWC compiler v2.32.1*/
+  /*LWC compiler v2.36.0*/
 }
 var Theme$1 = registerComponent(Theme, {
   tmpl: _tmpl$3
