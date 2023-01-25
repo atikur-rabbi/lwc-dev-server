@@ -16,11 +16,11 @@
     "lwc-webpack-plugin": "^0.3.0"
   },
   "devDependencies": {
-    "@lwc/compiler": "2.32.1",
-    "@lwc/engine-dom": "2.32.1",
-    "@lwc/rollup-plugin": "2.32.1",
-    "@lwc/synthetic-shadow": "2.32.1",
-    "@lwc/wire-service": "2.32.1",
+    "@lwc/compiler": "2.36.0",
+    "@lwc/engine-dom": "2.36.0",
+    "@lwc/rollup-plugin": "2.36.0",
+    "@lwc/synthetic-shadow": "2.36.0",
+    "@lwc/wire-service": "2.36.0",
     "@rollup/plugin-replace": "2.2.0",
     "concurrently": "^7.6.0",
     "live-server": "^1.2.2",
