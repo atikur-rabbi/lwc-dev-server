@@ -8653,37 +8653,182 @@ var _cHeader = registerComponent(Header, {
   tmpl: _tmpl
 });
 
-const $fragment1 = parseFragment`<div${3}><h1${3}>Test Components</h1></div>`;
-function tmpl$1($api, $cmp, $slotset, $ctx) {
-  const {st: api_static_fragment} = $api;
-  return [api_static_fragment($fragment1(), 1)];
+function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
+  var shadowSelector = token ? ("[" + token + "]") : "";
+  var hostSelector = token ? ("[" + token + "-host]") : "";
+  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}";
   /*LWC compiler v2.36.0*/
 }
-var _tmpl$1 = registerTemplate(tmpl$1);
-tmpl$1.stylesheets = [];
-tmpl$1.stylesheetToken = "c-test_test";
-freezeTemplate(tmpl$1);
+var _implicitStylesheets$2 = [stylesheet$2];
 
-class Test extends LightningElement {
-  renderedCallback() {
-    this.jsTest();
-  }
-  jsTest() {
-
-    // let uniqueClasses = [...new Set(assetClassTableData?.map(item => item.assetClasses?.map(i => i.class)).flat())];
-    // assetClassTableData?.console.log(assetClassTableData);
-    // console.log(assetClassTableData);
-  }
-  /*LWC compiler v2.36.0*/
-}
-var _cTest = registerComponent(Test, {
-  tmpl: _tmpl$1
-});
-
+const $fragment1 = parseFragment`<h1${3}>Table Demo</h1>`;
 const stc0$1 = {
   key: 0
 };
 const stc1 = {
+  classMap: {
+    "pagination-container": true
+  },
+  key: 3
+};
+function tmpl$1($api, $cmp, $slotset, $ctx) {
+  const {st: api_static_fragment, d: api_dynamic_text, t: api_text, h: api_element} = $api;
+  return [api_element("div", stc0$1, [api_static_fragment($fragment1(), 2), api_element("div", stc1, [api_text(api_dynamic_text($cmp.allpages))])])];
+  /*LWC compiler v2.36.0*/
+}
+var _tmpl$1 = registerTemplate(tmpl$1);
+tmpl$1.stylesheets = [];
+
+
+if (_implicitStylesheets$2) {
+  tmpl$1.stylesheets.push.apply(tmpl$1.stylesheets, _implicitStylesheets$2);
+}
+tmpl$1.stylesheetToken = "c-table_table";
+freezeTemplate(tmpl$1);
+
+// data array with 1000 records for month and savings 
+const data = [{
+  id: 1,
+  month: 'Jan',
+  savings: 100
+}, {
+  id: 2,
+  month: 'Feb',
+  savings: 200
+}, {
+  id: 3,
+  month: 'Mar',
+  savings: 300
+}, {
+  id: 4,
+  month: 'Apr',
+  savings: 400
+}, {
+  id: 5,
+  month: 'May',
+  savings: 500
+}, {
+  id: 6,
+  month: 'Jun',
+  savings: 600
+}, {
+  id: 7,
+  month: 'Jul',
+  savings: 700
+}, {
+  id: 8,
+  month: 'Aug',
+  savings: 800
+}, {
+  id: 9,
+  month: 'Sep',
+  savings: 900
+}, {
+  id: 10,
+  month: 'Oct',
+  savings: 1000
+}, {
+  id: 11,
+  month: 'Nov',
+  savings: 1100
+}, {
+  id: 12,
+  month: 'Dec',
+  savings: 1200
+}, {
+  id: 13,
+  month: 'Jan',
+  savings: 1300
+}, {
+  id: 14,
+  month: 'Feb',
+  savings: 1400
+}, {
+  id: 15,
+  month: 'Mar',
+  savings: 1500
+}, {
+  id: 16,
+  month: 'Apr',
+  savings: 1600
+}, {
+  id: 17,
+  month: 'May',
+  savings: 1700
+}, {
+  id: 18,
+  month: 'Jun',
+  savings: 1800
+}, {
+  id: 19,
+  month: 'Jul',
+  savings: 1900
+}, {
+  id: 20,
+  month: 'Aug',
+  savings: 2000
+}, {
+  id: 21,
+  month: 'Sep',
+  savings: 2100
+}];
+class Table extends LightningElement {
+  constructor(...args) {
+    super(...args);
+    this.data = data;
+    this.pagecount = [];
+    this.allpages = void 0;
+    this.perpage = 8;
+  }
+  renderedCallback() {
+    const table = this.template.querySelector(".datatable");
+    const trElements = table.querySelectorAll("tr");
+    this.pagecount = Math.ceil(trElements.length / this.perpage);
+
+    // for(let i = 0; i < this.pagecount; i++){
+    //     this.allpages.push({page: i});
+    // }
+    this.allpages = Array.from(Array(this.pagecount).keys());
+    console.log("pagecount", this.allpages);
+    console.log("pagecount", this.pagecount);
+    // console.log("table");
+    // console.log(table);
+    // console.log("trElements");
+    // console.log(trElements);
+    // console.log(trElements.length);
+    this.showTable(1);
+  }
+  showTable(pageNo) {
+    const table = this.template.querySelector(".datatable");
+    const trElements = table.querySelectorAll("tr");
+    const perpage = this.perpage;
+    for (let i = 0; i < trElements.length; i++) {
+      if (i < pageNo * perpage && i >= (pageNo - 1) * perpage) {
+        trElements[i].style.display = "table-row";
+      } else {
+        trElements[i].style.display = "none";
+      }
+    }
+  }
+  handlePageChange(event) {
+    // this.showTable(event.detail);
+    // console.log(event.target.innerText);
+    // console.log(event.target.getAttribute('data-value'));
+    this.showTable(event.target.getAttribute('data-value'));
+  }
+  /*LWC compiler v2.36.0*/
+}
+registerDecorators(Table, {
+  fields: ["data", "pagecount", "allpages", "perpage"]
+});
+var _cTable = registerComponent(Table, {
+  tmpl: _tmpl$1
+});
+
+const stc0$2 = {
+  key: 0
+};
+const stc1$1 = {
   props: {
     "label": "Demo LWC Components"
   },
@@ -8694,7 +8839,7 @@ const stc2 = {
 };
 function tmpl$2($api, $cmp, $slotset, $ctx) {
   const {c: api_custom_element, h: api_element} = $api;
-  return [api_element("div", stc0$1, [api_custom_element("c-header", _cHeader, stc1), api_custom_element("c-test", _cTest, stc2)])];
+  return [api_element("div", stc0$2, [api_custom_element("c-header", _cHeader, stc1$1), api_custom_element("c-table", _cTable, stc2)])];
   /*LWC compiler v2.36.0*/
 }
 var _tmpl$2 = registerTemplate(tmpl$2);
@@ -8714,21 +8859,21 @@ var App$1 = registerComponent(App, {
   tmpl: _tmpl$2
 });
 
-function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
+function stylesheet$3(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
   return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--at-blue-0: #0C2644;--at-blue-1: #003764;--at-blue-2: #B8C7D2;--at-blue-3: #5788AC;}h1" + shadowSelector + ", h2" + shadowSelector + " {margin: 0;padding: 4px 10px;}";
   /*LWC compiler v2.36.0*/
 }
-var _implicitStylesheets$2 = [stylesheet$2];
+var _implicitStylesheets$3 = [stylesheet$3];
 
-const stc0$2 = {
+const stc0$3 = {
   classMap: {
     "theme": true
   },
   key: 0
 };
-const stc1$1 = {
+const stc1$2 = {
   classMap: {
     "layout-body": true
   },
@@ -8753,7 +8898,7 @@ const stc4 = {
 const stc5 = [];
 function tmpl$3($api, $cmp, $slotset, $ctx) {
   const {s: api_slot, h: api_element} = $api;
-  return [api_element("div", stc0$2, [api_element("div", stc1$1, [api_element("div", stc2$1, [api_element("div", stc3, [api_slot("", stc4, stc5, $slotset)])])])])];
+  return [api_element("div", stc0$3, [api_element("div", stc1$2, [api_element("div", stc2$1, [api_element("div", stc3, [api_slot("", stc4, stc5, $slotset)])])])])];
   /*LWC compiler v2.36.0*/
 }
 var _tmpl$3 = registerTemplate(tmpl$3);
@@ -8761,8 +8906,8 @@ tmpl$3.slots = [""];
 tmpl$3.stylesheets = [];
 
 
-if (_implicitStylesheets$2) {
-  tmpl$3.stylesheets.push.apply(tmpl$3.stylesheets, _implicitStylesheets$2);
+if (_implicitStylesheets$3) {
+  tmpl$3.stylesheets.push.apply(tmpl$3.stylesheets, _implicitStylesheets$3);
 }
 tmpl$3.stylesheetToken = "c-theme_theme";
 freezeTemplate(tmpl$3);
@@ -8772,6 +8917,33 @@ class Theme extends LightningElement {
 }
 var Theme$1 = registerComponent(Theme, {
   tmpl: _tmpl$3
+});
+
+const $fragment1$1 = parseFragment`<div${3}><h1${3}>Test Components</h1></div>`;
+function tmpl$4($api, $cmp, $slotset, $ctx) {
+  const {st: api_static_fragment} = $api;
+  return [api_static_fragment($fragment1$1(), 1)];
+  /*LWC compiler v2.36.0*/
+}
+var _tmpl$4 = registerTemplate(tmpl$4);
+tmpl$4.stylesheets = [];
+tmpl$4.stylesheetToken = "c-test_test";
+freezeTemplate(tmpl$4);
+
+class Test extends LightningElement {
+  renderedCallback() {
+    this.jsTest();
+  }
+  jsTest() {
+
+    // let uniqueClasses = [...new Set(assetClassTableData?.map(item => item.assetClasses?.map(i => i.class)).flat())];
+    // assetClassTableData?.console.log(assetClassTableData);
+    // console.log(assetClassTableData);
+  }
+  /*LWC compiler v2.36.0*/
+}
+registerComponent(Test, {
+  tmpl: _tmpl$4
 });
 
 customElements.define('c-app', App$1.CustomElementConstructor);
