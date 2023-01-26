@@ -31,9 +31,9 @@ export default class Table extends LightningElement {
 
     // data array
     data = data;
-    pagecount = [];
+    @track pagecount = 0;
     allpages;
-    perpage = 8;
+    perpage = 10;
 
 
 
@@ -43,9 +43,7 @@ export default class Table extends LightningElement {
 
         this.pagecount = Math.ceil(trElements.length / this.perpage);
 
-        // for(let i = 0; i < this.pagecount; i++){
-        //     this.allpages.push({page: i});
-        // }
+        
         this.allpages = Array.from(Array(this.pagecount).keys());
         console.log("pagecount", this.allpages);
         console.log("pagecount", this.pagecount);
@@ -55,6 +53,14 @@ export default class Table extends LightningElement {
         // console.log(trElements);
         // console.log(trElements.length);
         this.showTable(1);
+
+
+        // pagination code
+        // for(let i = 0; i <= this.pagecount; i++){
+        //     this.allpages.push({page: i});
+        //     console.log("allpages", this.allpages);
+        // }
+
     }
 
     showTable(pageNo){

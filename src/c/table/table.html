@@ -2,14 +2,14 @@
     <div>
         <h1>Table Demo</h1>
 
-        <!-- <table class="datatable">
+        <table >
             <thead>
                 <tr>
                     <th>Month</th>
                     <th>Savings</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="datatable">
                 <template for:each={data} for:item="row">
                     <tr key={row.id}>
                         <td>{row.month}</td>
@@ -17,10 +17,11 @@
                     </tr>
                 </template>
             </tbody>
-        </table> -->
+        </table>
 
         <div class="pagination-container">
-            {allpages}
+            {pagecount}
+            <!-- {allpages} -->
             <!-- <template for:each={allpages} for:item="data">
                 <div key={data.page}>
                     <div class="pagination-btn" data-value={data.page} onclick={handlePageChange}>#</div> 
