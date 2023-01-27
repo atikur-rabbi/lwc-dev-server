@@ -25,15 +25,13 @@ const data = [
     {id:21, month: 'Sep', savings: 2100},
 ];
 
-
-
 export default class Table extends LightningElement {
 
     // data array
     data = data;
     @track pagecount = 0;
     allpages;
-    perpage = 5;
+    perpage = 8;
     currentpage = 1;
     activecheck = false;
 
@@ -56,7 +54,7 @@ export default class Table extends LightningElement {
     calculatePageCount(){
         this.pagecount =  Math.ceil(this.data.length/this.perpage);
         console.log("pagecount", this.pagecount);
-        this.allpages = Array.from(new Array( this.pagecount ), (_, i) => i+1);
+        this.allpages = getArray(this.pagecount, this.currentpage );
         console.log("allpages", this.allpages);
     }
 
@@ -79,9 +77,19 @@ export default class Table extends LightningElement {
     // handle page change
     handlePageChange(event){
         this.showTable(event.target.getAttribute('data-value'));
+        this.allpages = getArray(this.pagecount, this.currentpage );
     }
+
 }
 
-export function getArray(n) {
-    return Array.from({length: n}, (_, i) => i);
+export function getArray(n, start = 1) {
+    let newArray = [];
+    for (let i = 0; i < n; i++) {
+        if (i+1 == start) 
+            newArray.push(  {id:i, value:i+1, class:"pagination-btn active"} );
+        else
+            newArray.push(  {id:i, value:i+1, class:"pagination-btn"} );
+    }
+    return newArray;
 }
+

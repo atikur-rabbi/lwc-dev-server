@@ -8646,42 +8646,26 @@ const stc6 = {
   },
   key: 9
 };
-const stc7 = {
-  "pagination-btn": true,
-  "active": true
-};
-const stc8 = {
-  "pagination-btn": true
-};
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator, b: api_bind, f: api_flatten} = $api;
-  const {_m0, _m1} = $ctx;
+  const {_m0} = $ctx;
   return [api_element("div", stc0, [api_element("div", stc1, [api_element("table", stc2, [api_static_fragment($fragment1(), 4), api_element("tbody", stc3, api_iterator($cmp.data, function (row) {
     return api_element("tr", {
       key: api_key(6, row.id)
     }, [api_element("td", stc4, [api_text(api_dynamic_text(row.month))]), api_element("td", stc5, [api_text(api_dynamic_text(row.savings))])]);
   }))])]), api_element("div", stc6, api_flatten([api_iterator($cmp.allpages, function (data) {
     return api_element("div", {
-      key: api_key(10, data)
-    }, [$cmp.activecheck ? api_element("div", {
-      classMap: stc7,
+      key: api_key(10, data.id)
+    }, [api_element("div", {
+      className: data.class,
       attrs: {
-        "data-value": data
+        "data-value": data.value
       },
       key: 11,
       on: {
         "click": _m0 || ($ctx._m0 = api_bind($cmp.handlePageChange))
       }
-    }, [api_text(api_dynamic_text(data))]) : null, !$cmp.activecheck ? api_element("div", {
-      classMap: stc8,
-      attrs: {
-        "data-value": data
-      },
-      key: 12,
-      on: {
-        "click": _m1 || ($ctx._m1 = api_bind($cmp.handlePageChange))
-      }
-    }, [api_text(api_dynamic_text(data))]) : null]);
+    }, [api_text(api_dynamic_text(data.value))])]);
   })]))])];
   /*LWC compiler v2.36.0*/
 }
@@ -8789,7 +8773,7 @@ class Table extends LightningElement {
     this.data = data;
     this.pagecount = 0;
     this.allpages = void 0;
-    this.perpage = 5;
+    this.perpage = 8;
     this.currentpage = 1;
     this.activecheck = false;
     this.calculatePageCount();
@@ -8803,7 +8787,7 @@ class Table extends LightningElement {
   calculatePageCount() {
     this.pagecount = Math.ceil(this.data.length / this.perpage);
     console.log("pagecount", this.pagecount);
-    this.allpages = Array.from(new Array(this.pagecount), (_, i) => i + 1);
+    this.allpages = getArray(this.pagecount, this.currentpage);
     console.log("allpages", this.allpages);
   }
 
@@ -8825,6 +8809,7 @@ class Table extends LightningElement {
   // handle page change
   handlePageChange(event) {
     this.showTable(event.target.getAttribute('data-value'));
+    this.allpages = getArray(this.pagecount, this.currentpage);
   }
   /*LWC compiler v2.36.0*/
 }
@@ -8837,6 +8822,21 @@ registerDecorators(Table, {
 var _cTable = registerComponent(Table, {
   tmpl: _tmpl
 });
+function getArray(n, start = 1) {
+  let newArray = [];
+  for (let i = 0; i < n; i++) {
+    if (i + 1 == start) newArray.push({
+      id: i,
+      value: i + 1,
+      class: "pagination-btn active"
+    });else newArray.push({
+      id: i,
+      value: i + 1,
+      class: "pagination-btn"
+    });
+  }
+  return newArray;
+}
 
 const stc0$1 = {
   key: 0
