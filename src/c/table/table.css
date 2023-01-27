@@ -6,7 +6,18 @@ table, th, td {
     border: 1px solid black;
     
 }
-
+.table-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0px;
+}
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0px;
+}
 .pagination-btn {
     background-color: rgb(29, 165, 97);
     border: 0px solid #000;

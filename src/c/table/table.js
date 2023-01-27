@@ -34,41 +34,39 @@ export default class Table extends LightningElement {
     @track pagecount = 0;
     allpages;
     perpage = 10;
+    currentpage = 1;
 
 
-
-    renderedCallback(){
-        const table = this.template.querySelector(".datatable");
-        const trElements = table.querySelectorAll("tr");
-
-        this.pagecount = Math.ceil(trElements.length / this.perpage);
-
-        
-        this.allpages = Array.from(Array(this.pagecount).keys());
-        console.log("pagecount", this.allpages);
-        console.log("pagecount", this.pagecount);
-        // console.log("table");
-        // console.log(table);
-        // console.log("trElements");
-        // console.log(trElements);
-        // console.log(trElements.length);
-        this.showTable(1);
-
-
-        // pagination code
-        // for(let i = 0; i <= this.pagecount; i++){
-        //     this.allpages.push({page: i});
-        //     console.log("allpages", this.allpages);
-        // }
+    constructor(event) {
+        super();
+        this.calculatePageCount();
 
     }
 
+    connectedCallback(){
+        
+    }
+
+
+    renderedCallback(){
+        this.showTable(this.currentpage);   
+    }
+    
+    // calculate page count after data is loaded
+    calculatePageCount(){
+        this.pagecount =  Math.ceil(this.data.length/this.perpage);
+        console.log("pagecount", this.pagecount);
+        this.allpages = Array.from(new Array( this.pagecount ), (_, i) => i+1);
+        console.log("allpages", this.allpages);
+    }
+
+    // show table based on page number
     showTable(pageNo){
 
         const table = this.template.querySelector(".datatable");
         const trElements = table.querySelectorAll("tr");
         const perpage = this.perpage;
-
+        this.currentpage = pageNo;
         for(let i = 0; i < trElements.length; i++){
             if(i < (pageNo * perpage) && i >= ((pageNo - 1) * perpage)){
                 trElements[i].style.display = "table-row";
@@ -78,10 +76,12 @@ export default class Table extends LightningElement {
         }
     }
 
+    // handle page change
     handlePageChange(event){
-        // this.showTable(event.detail);
-        // console.log(event.target.innerText);
-        // console.log(event.target.getAttribute('data-value'));
         this.showTable(event.target.getAttribute('data-value'));
     }
+}
+
+export function getArray(n) {
+    return Array.from({length: n}, (_, i) => i);
 }

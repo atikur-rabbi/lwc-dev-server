@@ -1,32 +1,32 @@
 <template>
     <div>
-        <h1>Table Demo</h1>
-
-        <table >
-            <thead>
-                <tr>
-                    <th>Month</th>
-                    <th>Savings</th>
-                </tr>
-            </thead>
-            <tbody class="datatable">
-                <template for:each={data} for:item="row">
-                    <tr key={row.id}>
-                        <td>{row.month}</td>
-                        <td>{row.savings}</td>
+        <div class="table-container">
+            <table >
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Savings</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-
+                </thead>
+                <tbody class="datatable">
+                    <template for:each={data} for:item="row">
+                        <tr key={row.id}>
+                            <td>{row.month}</td>
+                            <td>{row.savings}</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        
         <div class="pagination-container">
-            {pagecount}
+            <!-- {pagecount} {currentpage} -->
             <!-- {allpages} -->
-            <!-- <template for:each={allpages} for:item="data">
-                <div key={data.page}>
-                    <div class="pagination-btn" data-value={data.page} onclick={handlePageChange}>#</div> 
+            <template for:each={allpages} for:item="data">
+                <div key={data}>
+                    <div class="pagination-btn" data-value={data} onclick={handlePageChange}>{data}</div> 
                 </div>
-            </template> -->
+            </template>
         </div>
     </div>
 </template>
