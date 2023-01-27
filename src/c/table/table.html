@@ -20,11 +20,17 @@
         </div>
         
         <div class="pagination-container">
-            <!-- {pagecount} {currentpage} -->
+            <!-- {pagecount}  -->
+            <!-- {currentpage} -->
             <!-- {allpages} -->
             <template for:each={allpages} for:item="data">
                 <div key={data}>
-                    <div class="pagination-btn" data-value={data} onclick={handlePageChange}>{data}</div> 
+                    <template if:true={activecheck}>
+                        <div class="pagination-btn active" data-value={data} onclick={handlePageChange}>{data}</div>
+                    </template>
+                    <template if:false={activecheck}>
+                        <div class="pagination-btn " data-value={data} onclick={handlePageChange}>{data}</div>
+                    </template> 
                 </div>
             </template>
         </div>

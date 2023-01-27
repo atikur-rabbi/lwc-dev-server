@@ -33,14 +33,14 @@ export default class Table extends LightningElement {
     data = data;
     @track pagecount = 0;
     allpages;
-    perpage = 10;
+    perpage = 5;
     currentpage = 1;
+    activecheck = false;
 
 
     constructor(event) {
         super();
         this.calculatePageCount();
-
     }
 
     connectedCallback(){

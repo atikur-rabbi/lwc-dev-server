@@ -8610,7 +8610,7 @@ var _implicitStylesheets = [stylesheet];
 function stylesheet$1(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.table-container" + shadowSelector + "{display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}";
+  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.table-container" + shadowSelector + "{display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}.active" + shadowSelector + " {background-color: #3c62dd;color: white;}";
   /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$1 = [stylesheet$1];
@@ -8647,11 +8647,15 @@ const stc6 = {
   key: 9
 };
 const stc7 = {
+  "pagination-btn": true,
+  "active": true
+};
+const stc8 = {
   "pagination-btn": true
 };
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator, b: api_bind, f: api_flatten} = $api;
-  const {_m0} = $ctx;
+  const {_m0, _m1} = $ctx;
   return [api_element("div", stc0, [api_element("div", stc1, [api_element("table", stc2, [api_static_fragment($fragment1(), 4), api_element("tbody", stc3, api_iterator($cmp.data, function (row) {
     return api_element("tr", {
       key: api_key(6, row.id)
@@ -8659,7 +8663,7 @@ function tmpl($api, $cmp, $slotset, $ctx) {
   }))])]), api_element("div", stc6, api_flatten([api_iterator($cmp.allpages, function (data) {
     return api_element("div", {
       key: api_key(10, data)
-    }, [api_element("div", {
+    }, [$cmp.activecheck ? api_element("div", {
       classMap: stc7,
       attrs: {
         "data-value": data
@@ -8668,7 +8672,16 @@ function tmpl($api, $cmp, $slotset, $ctx) {
       on: {
         "click": _m0 || ($ctx._m0 = api_bind($cmp.handlePageChange))
       }
-    }, [api_text(api_dynamic_text(data))])]);
+    }, [api_text(api_dynamic_text(data))]) : null, !$cmp.activecheck ? api_element("div", {
+      classMap: stc8,
+      attrs: {
+        "data-value": data
+      },
+      key: 12,
+      on: {
+        "click": _m1 || ($ctx._m1 = api_bind($cmp.handlePageChange))
+      }
+    }, [api_text(api_dynamic_text(data))]) : null]);
   })]))])];
   /*LWC compiler v2.36.0*/
 }
@@ -8776,8 +8789,9 @@ class Table extends LightningElement {
     this.data = data;
     this.pagecount = 0;
     this.allpages = void 0;
-    this.perpage = 10;
+    this.perpage = 5;
     this.currentpage = 1;
+    this.activecheck = false;
     this.calculatePageCount();
   }
   connectedCallback() {}
@@ -8818,7 +8832,7 @@ registerDecorators(Table, {
   track: {
     pagecount: 1
   },
-  fields: ["data", "allpages", "perpage", "currentpage"]
+  fields: ["data", "allpages", "perpage", "currentpage", "activecheck"]
 });
 var _cTable = registerComponent(Table, {
   tmpl: _tmpl

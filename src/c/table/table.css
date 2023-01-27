@@ -32,3 +32,8 @@ table, th, td {
     border-radius: 4px;
     display: inline-block;
 }
+
+.active {
+    background-color: #3c62dd;
+    color: white;
+}
