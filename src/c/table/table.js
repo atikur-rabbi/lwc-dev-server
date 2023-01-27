@@ -53,9 +53,9 @@ export default class Table extends LightningElement {
     // calculate page count after data is loaded
     calculatePageCount(){
         this.pagecount =  Math.ceil(this.data.length/this.perpage);
-        console.log("pagecount", this.pagecount);
+        // console.log("pagecount", this.pagecount);
         this.allpages = getArray(this.pagecount, this.currentpage );
-        console.log("allpages", this.allpages);
+        // console.log("allpages", this.allpages);
     }
 
     // show table based on page number
