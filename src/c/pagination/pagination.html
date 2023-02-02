@@ -1,0 +1,13 @@
+<template>
+    <div>
+        {pageCount} 
+        {currentPage}
+        <!-- {allPages.length} -->
+        <template for:each={allPages} for:item="data">
+            <div key={data.id}>
+                <div class={data.class}
+                data-value={data.value}>{data.value}</div>
+            </div>
+        </template>
+    </div>
+</template>
