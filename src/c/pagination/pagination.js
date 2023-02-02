@@ -26,16 +26,10 @@ export default class Table2 extends LightningElement {
     }
 
     connectedCallback() {
-        // if (!this.pageCount) {
-        //     return;
-        // }
-
-        // Render the data
-        // this.generatePagination();
-
-        // this.renderData();
         this.renderData();
+        this.copyPageCount();
     }
+
     renderedCallback() {
         // this.renderData();
     }
@@ -50,6 +44,7 @@ export default class Table2 extends LightningElement {
     }
 
     generatePagination() {
+        console.log('Show page data: ', this.allPages);
         this.allPages = getArray(this.pageCount, this.currentPage );
         console.log('Show page count: ', this.pageCount);
         console.log('Show page data: ', this.allPages);
