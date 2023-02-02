@@ -8608,33 +8608,47 @@ function stylesheet(token, useActualHostSelector, useNativeDirPseudoclass) {
 var _implicitStylesheets = [stylesheet];
 
 function stylesheet$1(token, useActualHostSelector, useNativeDirPseudoclass) {
+  var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}";
+  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.table-container" + shadowSelector + "{display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}";
   /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$1 = [stylesheet$1];
 
 function stylesheet$2(token, useActualHostSelector, useNativeDirPseudoclass) {
-  var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--color: #000;}";
+  var shadowSelector = token ? ("[" + token + "]") : "";
+  return ".pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}.active" + shadowSelector + " {background-color: #3c62dd;color: white;}.hidden" + shadowSelector + " {display: none;}";
   /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$2 = [stylesheet$2];
 
 const stc0 = {
+  classMap: {
+    "pagination-container": true
+  },
   key: 0
 };
+const stc1 = {
+  classMap: {
+    "hidden": true
+  },
+  key: 1
+};
 function tmpl($api, $cmp, $slotset, $ctx) {
-  const {d: api_dynamic_text, t: api_text, k: api_key, h: api_element, i: api_iterator, f: api_flatten} = $api;
-  return [api_element("div", stc0, api_flatten([api_text(api_dynamic_text($cmp.pageCount) + " " + api_dynamic_text($cmp.currentPage)), api_iterator($cmp.allPages, function (data) {
+  const {d: api_dynamic_text, t: api_text, h: api_element, k: api_key, b: api_bind, i: api_iterator, f: api_flatten} = $api;
+  const {_m0} = $ctx;
+  return [api_element("div", stc0, api_flatten([api_element("span", stc1, [api_text(api_dynamic_text($cmp.pageCount))]), api_iterator($cmp.allPages, function (data) {
     return api_element("div", {
-      key: api_key(1, data.id)
+      key: api_key(2, data.id)
     }, [api_element("div", {
       className: data.class,
       attrs: {
         "data-value": data.value
       },
-      key: 2
+      key: 3,
+      on: {
+        "click": _m0 || ($ctx._m0 = api_bind($cmp.handlePageChange))
+      }
     }, [api_text(api_dynamic_text(data.value))])]);
   })]))];
   /*LWC compiler v2.36.0*/
@@ -8739,47 +8753,50 @@ function getArray(n, start = 1) {
   return newArray;
 }
 
-const $fragment1 = parseFragment`<h1${3}>Table 2</h1>`;
-const $fragment2 = parseFragment`<thead${3}><tr${3}><th${3}>Month</th><th${3}>Savings</th></tr></thead>`;
+const $fragment1 = parseFragment`<thead${3}><tr${3}><th${3}>Month</th><th${3}>Savings</th></tr></thead>`;
 const stc0$1 = {
-  key: 3
+  classMap: {
+    "table-container": true
+  },
+  key: 1
 };
-const stc1 = {
+const stc1$1 = {
+  key: 2
+};
+const stc2 = {
   classMap: {
     "datatable": true
   },
-  key: 6
-};
-const stc2 = {
-  key: 8
+  key: 5
 };
 const stc3 = {
-  key: 9
+  key: 7
 };
 const stc4 = {
-  classMap: {
-    "pagination-container": true
-  },
-  key: 10
+  key: 8
 };
 function tmpl$1($api, $cmp, $slotset, $ctx) {
-  const {gid: api_scoped_id, st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator, c: api_custom_element} = $api;
+  const {gid: api_scoped_id, st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator, b: api_bind, c: api_custom_element} = $api;
+  const {_m0} = $ctx;
   return [api_element("div", {
     attrs: {
       "id": api_scoped_id("table2")
     },
     key: 0
-  }, [api_static_fragment($fragment1(), 2), $cmp.tableData ? api_element("table", stc0$1, [api_static_fragment($fragment2(), 5), api_element("tbody", stc1, api_iterator($cmp.tableData, function (row) {
+  }, [api_element("div", stc0$1, [$cmp.tableData ? api_element("table", stc1$1, [api_static_fragment($fragment1(), 4), api_element("tbody", stc2, api_iterator($cmp.tableData, function (row) {
     return api_element("tr", {
-      key: api_key(7, row.id)
-    }, [api_element("td", stc2, [api_text(api_dynamic_text(row.month))]), api_element("td", stc3, [api_text(api_dynamic_text(row.savings))])]);
-  }))]) : null, $cmp.tableData ? api_element("div", stc4, [api_custom_element("c-pagination", _cPagination, {
+      key: api_key(6, row.id)
+    }, [api_element("td", stc3, [api_text(api_dynamic_text(row.month))]), api_element("td", stc4, [api_text(api_dynamic_text(row.savings))])]);
+  }))]) : null]), api_custom_element("c-pagination", _cPagination, {
     props: {
       "pageCount": $cmp.pageCount,
       "currentPage": $cmp.currentpage
     },
-    key: 11
-  })]) : null])];
+    key: 9,
+    on: {
+      "click": _m0 || ($ctx._m0 = api_bind($cmp.handlePageChange))
+    }
+  })])];
   /*LWC compiler v2.36.0*/
 }
 var _tmpl$1 = registerTemplate(tmpl$1);
@@ -9058,7 +9075,7 @@ const stc0$4 = {
   },
   key: 0
 };
-const stc1$1 = {
+const stc1$2 = {
   classMap: {
     "layout-body": true
   },
@@ -9083,7 +9100,7 @@ const stc4$1 = {
 const stc5 = [];
 function tmpl$4($api, $cmp, $slotset, $ctx) {
   const {s: api_slot, h: api_element} = $api;
-  return [api_element("div", stc0$4, [api_element("div", stc1$1, [api_element("div", stc2$1, [api_element("div", stc3$1, [api_slot("", stc4$1, stc5, $slotset)])])])])];
+  return [api_element("div", stc0$4, [api_element("div", stc1$2, [api_element("div", stc2$1, [api_element("div", stc3$1, [api_slot("", stc4$1, stc5, $slotset)])])])])];
   /*LWC compiler v2.36.0*/
 }
 var _tmpl$4 = registerTemplate(tmpl$4);
