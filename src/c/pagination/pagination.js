@@ -13,7 +13,7 @@ export default class Table2 extends LightningElement {
         if(this.pageCount || this.currentPage)
         {
             // console.log('pageCount: ', this.pageCount);
-            this.generatePagination();
+            this.renderData();
         }
 
         // this.copyPageCount();

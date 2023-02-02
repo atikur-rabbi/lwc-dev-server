@@ -8662,7 +8662,7 @@ class Table2 extends LightningElement {
   get copyPageCount() {
     if (this.pageCount || this.currentPage) {
       // console.log('pageCount: ', this.pageCount);
-      this.generatePagination();
+      this.renderData();
     }
 
     // this.copyPageCount();
