@@ -8659,36 +8659,47 @@ const demopagination = [{
   class: "pagination-btn"
 }];
 class Table2 extends LightningElement {
-  get copyPageCount() {
-    if (this.pageCount || this.currentPage) {
-      // console.log('pageCount: ', this.pageCount);
-      this.renderData();
-    }
-
-    // this.copyPageCount();
-  }
-
-  constructor(event) {
-    super();
-    // this.pagination();
-    // this.renderData();
+  constructor(...args) {
+    super(...args);
     this.pageCount = void 0;
     this.currentPage = void 0;
     this.allPages = demopagination;
+    this.generatedPagination = false;
   }
+  // get copyPageCount() {
+  //     if(this.pageCount || this.currentPage)
+  //     {
+  //         // console.log('pageCount: ', this.pageCount);
+  //         this.renderData();
+  //     }
+
+  //     // this.copyPageCount();
+  // }
+
+  // constructor(event) {
+  //     super();
+  //     // this.pagination();
+  //     // this.renderData();
+  // }
+
   connectedCallback() {
-    this.renderData();
-    this.copyPageCount();
+    // this.renderData();
+    // this.copyPageCount();
   }
   renderedCallback() {
-    // this.renderData();
+    this.renderData();
   }
   renderData() {
-    if (this.pageCount == "") ; else {
-      // console.log('tableData: ', this.tableData);
+    if (this.pageCount != null) {
       console.log('pageCount: ', this.pageCount);
+    }
+    if (this.currentPage != null) {
       console.log('currentPage: ', this.currentPage);
-      this.generatePagination();
+    }
+    if (this.generatedPagination == false && this.pageCount > 0) {
+      // this.generatePagination();
+      this.allPages = getArray(this.pageCount, this.currentPage);
+      this.generatedPagination = true;
     }
   }
   generatePagination() {
@@ -8707,7 +8718,7 @@ registerDecorators(Table2, {
       config: 0
     }
   },
-  fields: ["allPages"]
+  fields: ["allPages", "generatedPagination"]
 });
 var _cPagination = registerComponent(Table2, {
   tmpl: _tmpl
