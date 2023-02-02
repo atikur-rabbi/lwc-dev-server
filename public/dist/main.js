@@ -8686,11 +8686,12 @@ class Table2 extends LightningElement {
   renderData() {
     if (this.pageCount == "") ; else {
       // console.log('tableData: ', this.tableData);
+      console.log('pageCount: ', this.pageCount);
+      console.log('currentPage: ', this.currentPage);
       this.generatePagination();
     }
   }
   generatePagination() {
-    console.log('Show page data: ', this.allPages);
     this.allPages = getArray(this.pageCount, this.currentPage);
     console.log('Show page count: ', this.pageCount);
     console.log('Show page data: ', this.allPages);

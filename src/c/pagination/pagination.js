@@ -39,12 +39,13 @@ export default class Table2 extends LightningElement {
             
         } else {
             // console.log('tableData: ', this.tableData);
+            console.log('pageCount: ', this.pageCount);
+            console.log('currentPage: ', this.currentPage);
             this.generatePagination();
         }
     }
 
     generatePagination() {
-        console.log('Show page data: ', this.allPages);
         this.allPages = getArray(this.pageCount, this.currentPage );
         console.log('Show page count: ', this.pageCount);
         console.log('Show page data: ', this.allPages);
@@ -61,4 +62,8 @@ export function getArray(n, start = 1) {
             newArray.push(  {id:i, value:i+1, class:"pagination-btn"} );
     }
     return newArray;
+}
+
+export function getArray2(n, start = 1) {
+    return Array.from({length: n}, (v, k) => k + 1).map(v => ({id: v-1, value: v, class: v == start ? "pagination-btn active" : "pagination-btn"}))
 }
