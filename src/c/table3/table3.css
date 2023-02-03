@@ -37,3 +37,7 @@ table, th, td {
     background-color: #3c62dd;
     color: white;
 }
+
+.hidden {
+    display: none;
+}

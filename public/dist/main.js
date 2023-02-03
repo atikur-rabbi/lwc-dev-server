@@ -8610,7 +8610,7 @@ var _implicitStylesheets = [stylesheet];
 function stylesheet$1(token, useActualHostSelector, useNativeDirPseudoclass) {
   var shadowSelector = token ? ("[" + token + "]") : "";
   var hostSelector = token ? ("[" + token + "-host]") : "";
-  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.table-container" + shadowSelector + "{display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}.active" + shadowSelector + " {background-color: #3c62dd;color: white;}";
+  return ((useActualHostSelector ? ":host {" : hostSelector + " {")) + "--background-color: #fff;}table" + shadowSelector + ", th" + shadowSelector + ", td" + shadowSelector + " {border: 1px solid black;}.table-container" + shadowSelector + "{display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-container" + shadowSelector + " {display: flex;justify-content: center;align-items: center;margin: 10px 0px;}.pagination-btn" + shadowSelector + " {background-color: rgb(29, 165, 97);border: 0px solid #000;color: rgb(255, 255, 255);padding: 8px 16px;text-align: center;text-decoration: none;cursor: pointer;width: 20px;height: 20px;margin: 2px 2px;border-radius: 4px;display: inline-block;}.active" + shadowSelector + " {background-color: #3c62dd;color: white;}.hidden" + shadowSelector + " {display: none;}";
   /*LWC compiler v2.36.0*/
 }
 var _implicitStylesheets$1 = [stylesheet$1];
@@ -8646,22 +8646,28 @@ const stc6 = {
   },
   key: 9
 };
+const stc7 = {
+  classMap: {
+    "hidden": true
+  },
+  key: 10
+};
 function tmpl($api, $cmp, $slotset, $ctx) {
   const {st: api_static_fragment, k: api_key, d: api_dynamic_text, t: api_text, h: api_element, i: api_iterator, b: api_bind, f: api_flatten} = $api;
   const {_m0} = $ctx;
-  return [api_element("div", stc0, [api_element("div", stc1, [api_element("table", stc2, [api_static_fragment($fragment1(), 4), api_element("tbody", stc3, api_iterator($cmp.data, function (row) {
+  return [api_element("div", stc0, [api_element("div", stc1, [api_element("table", stc2, [api_static_fragment($fragment1(), 4), api_element("tbody", stc3, api_iterator($cmp.tableData, function (row) {
     return api_element("tr", {
       key: api_key(6, row.id)
     }, [api_element("td", stc4, [api_text(api_dynamic_text(row.month))]), api_element("td", stc5, [api_text(api_dynamic_text(row.savings))])]);
-  }))])]), api_element("div", stc6, api_flatten([api_iterator($cmp.allpages, function (data) {
+  }))])]), api_element("div", stc6, api_flatten([api_element("span", stc7, [api_text(api_dynamic_text($cmp.pageCount))]), api_iterator($cmp.allPages, function (data) {
     return api_element("div", {
-      key: api_key(10, data.id)
+      key: api_key(11, data.id)
     }, [api_element("div", {
       className: data.class,
       attrs: {
         "data-value": data.value
       },
-      key: 11,
+      key: 12,
       on: {
         "click": _m0 || ($ctx._m0 = api_bind($cmp.handlePageChange))
       }
@@ -8679,116 +8685,48 @@ if (_implicitStylesheets$1) {
 tmpl.stylesheetToken = "c-table3_table3";
 freezeTemplate(tmpl);
 
-// data array with 1000 records for month and savings 
-const data = [{
-  id: 1,
-  month: 'Jan',
-  savings: 100
-}, {
-  id: 2,
-  month: 'Feb',
-  savings: 200
-}, {
-  id: 3,
-  month: 'Mar',
-  savings: 300
-}, {
-  id: 4,
-  month: 'Apr',
-  savings: 400
-}, {
-  id: 5,
-  month: 'May',
-  savings: 500
-}, {
-  id: 6,
-  month: 'Jun',
-  savings: 600
-}, {
-  id: 7,
-  month: 'Jul',
-  savings: 700
-}, {
-  id: 8,
-  month: 'Aug',
-  savings: 800
-}, {
-  id: 9,
-  month: 'Sep',
-  savings: 900
-}, {
-  id: 10,
-  month: 'Oct',
-  savings: 1000
-}, {
-  id: 11,
-  month: 'Nov',
-  savings: 1100
-}, {
-  id: 12,
-  month: 'Dec',
-  savings: 1200
-}, {
-  id: 13,
-  month: 'Jan',
-  savings: 1300
-}, {
-  id: 14,
-  month: 'Feb',
-  savings: 1400
-}, {
-  id: 15,
-  month: 'Mar',
-  savings: 1500
-}, {
-  id: 16,
-  month: 'Apr',
-  savings: 1600
-}, {
-  id: 17,
-  month: 'May',
-  savings: 1700
-}, {
-  id: 18,
-  month: 'Jun',
-  savings: 1800
-}, {
-  id: 19,
-  month: 'Jul',
-  savings: 1900
-}, {
-  id: 20,
-  month: 'Aug',
-  savings: 2000
-}, {
-  id: 21,
-  month: 'Sep',
-  savings: 2100
-}];
 class Table extends LightningElement {
-  // data array
-
-  constructor(event) {
-    super();
-    this.data = data;
-    this.pagecount = 0;
-    this.allpages = void 0;
+  constructor(...args) {
+    super(...args);
+    this.tableData = void 0;
+    this.pageCount = 0;
+    this.allPages = [];
     this.perpage = 8;
-    this.currentpage = 1;
+    this.currentPage = 1;
     this.activecheck = false;
-    this.calculatePageCount();
+    this.generatedPagination = false;
   }
-  connectedCallback() {}
   renderedCallback() {
-    this.showTable(this.currentpage);
+    // this.showTable(this.currentpage); 
+    this.renderData();
+  }
+  renderData() {
+    if (this.tableData === "") ; else {
+      // console.log('tableData: ', this.tableData);
+      this.calculatePageCount();
+    }
+    if (this.pageCount != null) {
+      console.log('pageCount: ', this.pageCount);
+    }
+    if (this.currentPage != null) {
+      console.log('currentPage: ', this.currentPage);
+      this.showTable(this.currentPage);
+    }
+    if (this.generatedPagination == false && this.pageCount > 0) {
+      // this.generatePagination();
+      this.allPages = getArray(this.pageCount, this.currentPage);
+      this.generatedPagination = true;
+    }
   }
 
   // calculate page count after data is loaded
   calculatePageCount() {
-    this.pagecount = Math.ceil(this.data.length / this.perpage);
-    // console.log("pagecount", this.pagecount);
-    this.allpages = getArray(this.pagecount, this.currentpage);
-    // console.log("allpages", this.allpages);
+    this.pageCount = Math.ceil(this.tableData.length / this.perpage);
+  }
+
+  // generate pagination
+  generatePagination() {
+    this.allPages = getArray(this.pageCount, this.currentPage);
   }
 
   // show table based on page number
@@ -8796,7 +8734,7 @@ class Table extends LightningElement {
     const table = this.template.querySelector(".datatable");
     const trElements = table.querySelectorAll("tr");
     const perpage = this.perpage;
-    this.currentpage = pageNo;
+    this.currentPage = pageNo;
     for (let i = 0; i < trElements.length; i++) {
       if (i < pageNo * perpage && i >= (pageNo - 1) * perpage) {
         trElements[i].style.display = "table-row";
@@ -8809,15 +8747,26 @@ class Table extends LightningElement {
   // handle page change
   handlePageChange(event) {
     this.showTable(event.target.getAttribute('data-value'));
-    this.allpages = getArray(this.pagecount, this.currentpage);
+    this.allPages = getArray(this.pageCount, this.currentPage);
+    this.generatedPagination = false;
+  }
+
+  // generate pagination array
+  generatePagination() {
+    this.allPages = getArray(this.pageCount, this.currentPage);
+    this.showTable(this.currentPage);
+    console.log('Show page count: ', this.pageCount);
+    console.log('Show page data: ', this.allPages);
   }
   /*LWC compiler v2.36.0*/
 }
 registerDecorators(Table, {
-  track: {
-    pagecount: 1
+  publicProps: {
+    tableData: {
+      config: 0
+    }
   },
-  fields: ["data", "allpages", "perpage", "currentpage", "activecheck"]
+  fields: ["pageCount", "allPages", "perpage", "currentPage", "activecheck", "generatedPagination"]
 });
 var _cTable3 = registerComponent(Table, {
   tmpl: _tmpl
@@ -8861,7 +8810,7 @@ if (_implicitStylesheets) {
 tmpl$1.stylesheetToken = "c-app_app";
 freezeTemplate(tmpl$1);
 
-const data$1 = [{
+const data = [{
   id: 1,
   month: 'Jan',
   savings: 100
@@ -8949,7 +8898,7 @@ const data$1 = [{
 class App extends LightningElement {
   constructor(...args) {
     super(...args);
-    this.tableData = data$1;
+    this.tableData = data;
   }
   /*LWC compiler v2.36.0*/
 }
