@@ -7,7 +7,6 @@ export default class Table extends LightningElement {
     allPages=[];
     perpage = 8;
     currentPage = 1;
-    activecheck = false;
     generatedPagination = false; 
 
 

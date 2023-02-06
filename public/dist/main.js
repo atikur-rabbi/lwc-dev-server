@@ -8693,7 +8693,6 @@ class Table extends LightningElement {
     this.allPages = [];
     this.perpage = 8;
     this.currentPage = 1;
-    this.activecheck = false;
     this.generatedPagination = false;
   }
   renderedCallback() {
@@ -8766,7 +8765,7 @@ registerDecorators(Table, {
       config: 0
     }
   },
-  fields: ["pageCount", "allPages", "perpage", "currentPage", "activecheck", "generatedPagination"]
+  fields: ["pageCount", "allPages", "perpage", "currentPage", "generatedPagination"]
 });
 var _cTable3 = registerComponent(Table, {
   tmpl: _tmpl
