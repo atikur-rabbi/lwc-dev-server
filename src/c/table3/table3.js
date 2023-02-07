@@ -48,10 +48,10 @@ export default class Table extends LightningElement {
         this.pageCount =  Math.ceil(this.tableData.length/this.perpage);
     }
 
-    // generate pagination
-    generatePagination(){
-        this.allPages = getArray(this.pageCount, this.currentPage );
-    }
+    // // generate pagination
+    // generatePagination(){
+    //     this.allPages = getArray(this.pageCount, this.currentPage );
+    // }
 
     // show table based on page number
     showTable(pageNo){
